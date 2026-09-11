@@ -73,23 +73,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
-// Load 50 Clinical Pathways Database
-let pathways: Record<string, Array<{ question: string; options: string[] }>> = {};
-try {
-  const pathwaysPath = path.join(__dirname, '..', 'data', 'pathways.json');
-  if (fs.existsSync(pathwaysPath)) {
-    pathways = JSON.parse(fs.readFileSync(pathwaysPath, 'utf-8'));
-    console.log(`[Pathways Loaded] Loaded ${Object.keys(pathways).length} static clinical pathways`);
-  }
-} catch (e) {
-  console.warn('Could not load pathways.json:', e);
-}
+import { PathwaysService } from '../services/pathwaysService.js';
 
 /**
  * POST /api/ai/chat (and /api/chat)
- * Hybrid Controller: Static 10-Question Pathways for 50 Illnesses + Dynamic Gemini Fallback
+ * Hybrid Controller: Static 10-Question Multilingual Pathways for 50 Illnesses (Telugu, Hindi, English) + Dynamic Gemini Fallback
  */
-chatRoutes.post('/chat', optionalAuth, async (req: Request, res: Response): Promise<void> => {
+chatRoutes.post(['/', '/chat'], optionalAuth, async (req: Request, res: Response): Promise<void> => {
   try {
     const { visitId, userMessage, language, clinicalMode, audioTranscript } = req.body;
 
@@ -183,11 +173,24 @@ chatRoutes.post('/chat', optionalAuth, async (req: Request, res: Response): Prom
     const isFirstTurn = assistantCount === 0;
 
     // STEP A: Classification (First Turn Only)
+    // 1. Check static symptom dictionary in Telugu, Hindi, and English (0ms, zero API call)
     if (!activePathway && isFirstTurn) {
-      const candidateKeys = Object.keys(pathways);
-      const matched = await GeminiService.classifySymptom(userMessage, candidateKeys);
+      let matched = PathwaysService.matchPathway(userMessage);
 
-      if (matched && matched !== 'UNKNOWN' && pathways[matched]) {
+      // 2. If static matching didn't catch it, fallback to AI classification
+      if (!matched) {
+        try {
+          const candidateKeys = PathwaysService.getAllPathwayKeys();
+          const aiMatched = await GeminiService.classifySymptom(userMessage, candidateKeys);
+          if (aiMatched && aiMatched !== 'UNKNOWN' && PathwaysService.isStaticPathway(aiMatched)) {
+            matched = aiMatched;
+          }
+        } catch (classifyErr: any) {
+          console.warn('[Gemini classify fallback notice]:', classifyErr.message);
+        }
+      }
+
+      if (matched && PathwaysService.isStaticPathway(matched)) {
         activePathway = matched;
         console.log(`[Hybrid Pathway Matched] Visit ${currentVisitId} assigned to pathway "${activePathway}"`);
 
@@ -206,21 +209,14 @@ chatRoutes.post('/chat', optionalAuth, async (req: Request, res: Response): Prom
       }
     }
 
-    // STEP B: Static Routing (The Fast Path)
-    if (activePathway && pathways[activePathway]) {
+    // STEP B: Static Routing (The Fast Path - 0ms Latency in English, Hindi, and Telugu)
+    if (activePathway && PathwaysService.isStaticPathway(activePathway)) {
       const stepIndex = assistantCount;
 
       if (stepIndex < 10) {
-        const item = pathways[activePathway][stepIndex];
-        let nextQuestion = item.question;
-        let options = [...item.options];
-
-        // Step 4: Multilingual Support - Fast Single-shot translation if hi-IN or te-IN
-        if (targetLang === 'hi-IN' || targetLang === 'te-IN') {
-          const translated = await GeminiService.translateQuestionAndOptions(nextQuestion, options, targetLang);
-          nextQuestion = translated.question;
-          options = translated.options;
-        }
+        const item = PathwaysService.getQuestion(activePathway, stepIndex, targetLang);
+        const nextQuestion = item ? item.question : 'How are you feeling right now?';
+        const options = item ? [...item.options] : ['Yes', 'No'];
 
         const staticResponse = {
           nextQuestion,
@@ -309,12 +305,33 @@ chatRoutes.post('/chat', optionalAuth, async (req: Request, res: Response): Prom
     }
 
     // STEP C: Dynamic Routing (The AI Fallback)
-    const aiResponse = await GeminiService.generateNextQuestion({
-      userMessage,
-      history: updatedHistory,
-      language: targetLang,
-      clinicalMode: targetMode,
-    });
+    let aiResponse;
+    try {
+      aiResponse = await GeminiService.generateNextQuestion({
+        userMessage,
+        history: updatedHistory,
+        language: targetLang,
+        clinicalMode: targetMode,
+      });
+    } catch (aiErr: any) {
+      console.warn('[Gemini AI Fallback Triggered]:', aiErr.message);
+      const isTe = targetLang === 'te-IN' || targetLang === 'te';
+      const isHi = targetLang === 'hi-IN' || targetLang === 'hi';
+      aiResponse = {
+        nextQuestion: isTe
+          ? 'మీరు చెప్పిన లక్షణాలను నమోదు చేసుకున్నాము. దయచేసి ఈ సమస్య ఎంత కాలం నుండి ఉందో చెప్పగలరా?'
+          : isHi
+          ? 'हमने आपके लक्षण दर्ज कर लिए हैं। कृपया बताएं कि यह समस्या आपको कितने समय से हो रही है?'
+          : 'We have noted your symptoms. Could you please tell us how long you have been experiencing this problem?',
+        options: isTe
+          ? ['ఈరోజు', '1-3 రోజుల క్రితం', '1 వారం కంటే ఎక్కువ']
+          : isHi
+          ? ['आज', '1-3 दिन पहले', '1 सप्ताह से अधिक']
+          : ['Today', '1–3 days ago', 'More than 1 week ago'],
+        isEmergency: false,
+        isComplete: false,
+      };
+    }
 
     if (dbUp) {
       try {
