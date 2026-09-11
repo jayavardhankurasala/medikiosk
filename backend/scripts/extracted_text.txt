@@ -1,0 +1,550 @@
+1. Fever
+When did your fever first begin?Choices: Today | 1–3 days ago | 4–7 days ago | More than 1 week ago
+What has been the highest temperature you have measured?Choices: Below 100°F | 100–102°F | 102–104°F | Above 104°F | Not measured
+Does the fever come and go, or has it remained continuous?Choices: Comes and goes | Continuous | Not sure
+Have you experienced chills or shivering along with the fever?Choices: Yes | No
+Are you experiencing body aches or unusual muscle pain along with the fever?Choices: Yes | No
+Do you have a headache along with the fever?Choices: Yes | No
+Are you also experiencing a cough or a runny nose?Choices: Cough | Runny nose | Both | Neither
+Have you experienced vomiting or loose stools along with the fever?Choices: Vomiting | Loose stools | Both | Neither
+Have you noticed any new rash or unusual changes on your skin?Choices: Yes | No
+Have you taken any medicine to reduce the fever?Choices: Yes | No
+2. Common Cold
+What nasal symptoms are you experiencing?Choices: Blocked nose | Runny nose | Sneezing | Multiple
+What does your nasal discharge look like?Choices: Clear | White | Yellow/green | No discharge
+Are you experiencing a sore or irritated throat along with your cold symptoms?Choices: Yes | No
+What type of cough are you having, if any?Choices: Dry cough | Cough with phlegm | No cough
+Have you had a fever along with your cold symptoms?Choices: Yes | No
+Are you experiencing pressure or pain around your forehead, cheeks, or nose?Choices: Yes | No
+Do you have any ear blockage, fullness, or ear pain?Choices: Blockage/fullness | Pain | Both | Neither
+Have your cold symptoms become worse since they first started?Choices: Yes | No | About the same
+Do your symptoms usually appear after exposure to dust, pollen, or another allergen?Choices: Yes | No | Not sure
+Have you taken any medicine for your cold symptoms?Choices: Yes | No
+3. Flu (Influenza)
+Did your symptoms begin suddenly, or did they develop gradually?Choices: Suddenly | Gradually | Not sure
+Have you had a fever or chills since your symptoms began?Choices: Fever | Chills | Both | Neither
+Are you experiencing body aches or muscle pain?Choices: Yes | No
+Do you have a cough along with your other symptoms?Choices: Dry cough | Cough with phlegm | No cough
+Are you experiencing a headache?Choices: Yes | No
+Have you been feeling unusually tired or weak?Choices: Yes | No
+Do you have a sore or irritated throat?Choices: Yes | No
+Have you experienced vomiting or loose stools?Choices: Vomiting | Loose stools | Both | Neither
+Are you experiencing any difficulty or discomfort while breathing?Choices: Yes | No
+Are you able to drink enough water and other fluids?Choices: Yes | No | Only small amounts
+4. COVID-19
+Have you taken a COVID-19 test for your current symptoms?Choices: Positive | Negative | Not tested | Waiting for result
+When did your symptoms first begin?Choices: Today | 1–3 days ago | 4–7 days ago | More than 1 week ago
+Have you had a fever since your symptoms began?Choices: Yes | No
+Do you have a cough along with your other symptoms?Choices: Dry cough | Cough with phlegm | No cough
+Are you experiencing any shortness of breath or difficulty breathing?Choices: Yes | No
+Are you having any chest pain or pressure?Choices: Yes | No
+Have you noticed any change or loss of your sense of taste or smell?Choices: Loss of taste | Loss of smell | Both | No change
+Are you experiencing a sore or irritated throat?Choices: Yes | No
+Have your symptoms become worse recently?Choices: Yes | No | About the same
+Have you received any treatment or taken any medicines for your current symptoms?Choices: Yes | No
+5. Cough
+How long have you been experiencing the cough?Choices: Less than 1 week | 1–3 weeks | 3–8 weeks | More than 8 weeks
+Is your cough dry, or are you bringing up phlegm?Choices: Dry cough | Cough with phlegm | Both
+If you are bringing up phlegm, what color is it?Choices: Clear/white | Yellow | Green | Blood-stained | No phlegm
+Is your cough worse at a particular time of the day or night?Choices: Morning | Daytime | Night | Throughout the day
+Have you had a fever along with the cough?Choices: Yes | No
+Do you hear a wheezing or whistling sound when you breathe?Choices: Yes | No
+Are you experiencing shortness of breath along with the cough?Choices: Yes | No
+Are you having any chest pain when you cough or breathe?Choices: Yes | No
+Have you experienced unexplained weight loss or night sweats recently?Choices: Weight loss | Night sweats | Both | Neither
+Do you currently smoke or use any tobacco products?Choices: Yes | No | Previously used but stopped
+6. Sore Throat
+When did your sore throat first begin?Choices: Today | 1–3 days ago | 4–7 days ago | More than 1 week ago
+How severe is your throat pain?Choices: Mild | Moderate | Severe
+Does swallowing food, water, or saliva cause pain?Choices: Food | Water | Saliva | All of these | None
+Have you had a fever along with the sore throat?Choices: Yes | No
+Are you also experiencing a cough or runny nose?Choices: Cough | Runny nose | Both | Neither
+Have you noticed any swelling in your neck?Choices: Yes | No
+Has your voice become hoarse or changed recently?Choices: Yes | No
+Are you having any difficulty breathing?Choices: Yes | No
+Are you having difficulty swallowing your own saliva?Choices: Yes | No
+Have you taken any medicine for your throat pain or infection?Choices: Yes | No
+7. Asthma
+Are you feeling short of breath right now?Choices: Yes | No
+Do you experience wheezing or a whistling sound when you breathe?Choices: Yes | No
+Have you previously been diagnosed with asthma?Choices: Yes | No | Not sure
+Do your breathing symptoms appear after exposure to a particular trigger?Choices: Dust | Smoke | Cold air | Exercise | Other | No known trigger
+Do your breathing symptoms become worse or wake you up at night?Choices: Yes | No
+Do you have a prescribed inhaler for your breathing problems?Choices: Yes | No
+Have you used your inhaler during the current episode?Choices: Yes | No | Not applicable
+Does using your inhaler usually provide relief from your breathing symptoms?Choices: Yes | No | Sometimes | Not applicable
+Have you ever needed emergency treatment because of a severe asthma attack?Choices: Yes | No
+Are you able to speak in complete sentences without stopping because of breathlessness?Choices: Yes | No
+8. Pneumonia
+Have you had a fever along with your current symptoms?Choices: Yes | No
+Is your cough dry, or are you producing phlegm?Choices: Dry cough | Cough with phlegm | Both
+If you are producing phlegm, what color is it?Choices: Clear/white | Yellow | Green | Blood-stained | Not applicable
+Are you experiencing shortness of breath or difficulty breathing?Choices: Yes | No
+Does your chest pain become worse when you take a deep breath or cough?Choices: Yes | No | No chest pain
+Have you experienced chills or shivering along with the fever or cough?Choices: Yes | No
+Are you feeling unusually weak or exhausted?Choices: Yes | No
+Have you measured your oxygen level using a pulse oximeter?Choices: Below 90% | 90–94% | 95% or above | Not measured
+Have your breathing or other symptoms become worse recently?Choices: Yes | No | About the same
+Did these symptoms begin after a recent cold, flu, or other respiratory infection?Choices: Yes | No | Not sure
+9. Tuberculosis (TB)
+How long have you been experiencing the cough?Choices: Less than 2 weeks | 2–4 weeks | 1–3 months | More than 3 months
+Are you bringing up phlegm when you cough?Choices: Yes | No
+Have you noticed any blood in your phlegm?Choices: Yes | No
+Do you have a fever that is more noticeable at a particular time of day?Choices: Mostly in the evening | Throughout the day | Comes and goes | No fever
+Have you been experiencing night sweats recently?Choices: Yes | No
+Have you experienced unexplained weight loss recently?Choices: Yes | No
+Has your appetite decreased recently?Choices: Yes | No
+Have you been in close contact with anyone who has had tuberculosis?Choices: Yes | No | Not sure
+Have you ever been treated for tuberculosis in the past?Choices: Yes | No | Not sure
+Are you currently experiencing any difficulty breathing?Choices: Yes | No
+10. Allergic Rhinitis
+What is the main nasal symptom that is bothering you?Choices: Sneezing | Runny nose | Blocked nose | Itching
+Do you have a watery or blocked nose?Choices: Watery/runny nose | Blocked nose | Both | Neither
+Are your eyes itchy, watery, or red along with your nasal symptoms?Choices: Itchy eyes | Watery eyes | Red eyes | Multiple | None
+Do your symptoms appear after exposure to a particular trigger?Choices: Dust | Pollen | Smoke | Pets | Other | No known trigger
+Do these symptoms become worse during a particular season?Choices: Yes | No | Not sure
+Have you had a fever along with your nasal symptoms?Choices: Yes | No
+Do you experience wheezing or difficulty breathing along with these symptoms?Choices: Yes | No
+How long have you been experiencing these symptoms?Choices: Less than 1 week | 1–4 weeks | 1–6 months | More than 6 months
+Have you experienced similar allergy symptoms in the past?Choices: Yes | No
+Have you taken any medicine to relieve your allergy symptoms?Choices: Yes | No
+11. Migraine
+Where on your head do you usually feel the migraine pain?Choices: One side | Both sides | Forehead | Back of head | Around the eyes | Other
+How severe is your headache when it occurs?Choices: Mild | Moderate | Severe | Very severe
+Does the pain feel throbbing or pulsating?Choices: Yes | No | Sometimes
+Does bright light make your headache worse?Choices: Yes | No
+Does loud sound make your headache worse?Choices: Yes | No
+Do you feel nauseated or vomit when you have the headache?Choices: Nausea | Vomiting | Both | Neither
+Do you experience any visual changes or other warning symptoms before the headache begins?Choices: Blurred vision | Flashing lights | Blind spots | Other | None
+Have you noticed any specific trigger that tends to bring on your migraine?Choices: Stress | Lack of sleep | Certain foods | Bright light | Menstrual period | Other | No known trigger
+Have you experienced similar migraine attacks in the past?Choices: Yes | No
+Have you taken any medicine to relieve your headache?Choices: Yes | No
+12. Headache
+Did your headache begin suddenly, or did it develop gradually?Choices: Suddenly | Gradually | Not sure
+Where exactly do you feel the headache?Choices: Forehead | One side | Both sides | Back of head | Around the eyes | Other
+How severe is your headache?Choices: Mild | Moderate | Severe | Very severe
+Do you have a fever along with the headache?Choices: Yes | No
+Have you experienced vomiting along with the headache?Choices: Yes | No
+Have you noticed any change or loss of vision during the headache?Choices: Blurred vision | Reduced vision | Loss of vision | No change
+Do you have stiffness or difficulty moving your neck?Choices: Yes | No
+Are you experiencing weakness or numbness in any part of your body?Choices: Yes | No
+Have you recently had a head injury or accident?Choices: Yes | No
+Have you experienced a similar type of headache before?Choices: Yes | No
+13. Dizziness
+When you feel dizzy, does the room seem to spin, or do you mainly feel light-headed?Choices: Room spinning | Light-headedness | Both | Neither
+Does the dizziness occur or become worse when you stand up?Choices: Yes | No | Sometimes
+Does moving your head make the dizziness worse?Choices: Yes | No
+How long does each episode of dizziness usually last?Choices: A few seconds | Several minutes | Several hours | Almost continuously
+Have you noticed any hearing loss, ringing, or fullness in your ears along with the dizziness?Choices: Hearing loss | Ringing | Fullness | More than one | None
+Do you feel nauseated or feel like vomiting when you become dizzy?Choices: Nausea | Vomiting | Both | Neither
+Have you ever fainted or completely lost consciousness during an episode of dizziness?Choices: Yes | No
+Are you experiencing any weakness or numbness along with the dizziness?Choices: Yes | No
+Have you noticed any difficulty with your vision or speech during an episode?Choices: Vision difficulty | Speech difficulty | Both | Neither
+Have you recently started taking any new medicine before these symptoms began?Choices: Yes | No | Not sure
+14. Fainting
+Did you completely lose consciousness during the episode?Choices: Yes | No | Not sure
+Approximately how long were you unconscious?Choices: A few seconds | Less than 1 minute | More than 1 minute | Not sure
+Did you feel dizzy, sweaty, weak, or otherwise unwell before you fainted?Choices: Dizziness | Sweating | Weakness | More than one | None
+Did anyone notice shaking or unusual movements while you were unconscious?Choices: Yes | No | Not sure
+Did you injure yourself when you fainted or fell?Choices: Yes | No
+How quickly did you return to your normal state after regaining consciousness?Choices: Immediately | Within a few minutes | Took longer | Not sure
+Were you having a fever or another illness around the time you fainted?Choices: Fever | Other illness | Both | Neither
+Have you ever been diagnosed with any heart disease or heart-related condition?Choices: Yes | No | Not sure
+Have you experienced a similar fainting episode in the past?Choices: Yes | No
+Are you currently taking any medicines that can lower your blood pressure?Choices: Yes | No | Not sure
+15. Ear Infection
+Which ear is causing you pain or discomfort?Choices: Left ear | Right ear | Both ears
+How severe is the ear pain?Choices: Mild | Moderate | Severe
+Have you had a fever along with the ear symptoms?Choices: Yes | No
+Have you noticed any fluid or discharge coming from your ear?Choices: Yes | No
+Has your hearing become reduced or blocked in the affected ear?Choices: Yes | No
+Did the ear symptoms begin after you recently had a cold or other respiratory infection?Choices: Yes | No | Not sure
+Does your ear feel blocked, full, or under pressure?Choices: Yes | No
+Have you experienced dizziness or a spinning sensation along with the ear problem?Choices: Yes | No
+Has water or a foreign object recently entered your ear?Choices: Water | Foreign object | Both | Neither
+Have you used any medicine or ear drops for this problem?Choices: Yes | No
+16. Conjunctivitis (Eye Infection)
+Is the redness affecting one eye or both of your eyes?Choices: Left eye | Right eye | Both eyes
+How severe is the redness in your eye?Choices: Mild | Moderate | Severe
+Are you noticing any discharge coming from your eye?Choices: Yes | No
+Do your eyes feel itchy or irritated?Choices: Yes | No
+Are you experiencing any pain in your eye?Choices: Yes | No
+Has your vision become blurred or changed since the eye problem began?Choices: Yes | No
+Does bright light make your eye discomfort or pain worse?Choices: Yes | No
+Has anyone close to you recently had similar eye symptoms?Choices: Yes | No | Not sure
+Do you currently wear contact lenses?Choices: Yes | No
+Have you used any eye drops or other treatment for this problem?Choices: Yes | No
+17. Toothache
+Which tooth or area of your mouth is causing the pain?Choices: Upper teeth | Lower teeth | Front teeth | Back teeth | Not sure
+How severe is your tooth pain?Choices: Mild | Moderate | Severe | Very severe
+Does eating or drinking something hot or cold trigger your tooth pain?Choices: Hot food/drinks | Cold food/drinks | Both | Neither
+Does chewing or biting make the tooth pain worse?Choices: Yes | No
+Have you noticed any swelling of your gums, face, or jaw?Choices: Gums | Face | Jaw | More than one | No swelling
+Have you developed a fever along with the tooth pain?Choices: Yes | No
+Have you noticed a bad taste in your mouth or any pus around the affected tooth?Choices: Bad taste | Pus | Both | Neither
+Have you recently undergone any dental treatment on the affected tooth?Choices: Yes | No
+Have you taken any medicine to relieve the tooth pain?Choices: Yes | No
+Has the tooth pain been getting worse since it first started?Choices: Yes | No | About the same
+18. GERD (Acid Reflux)
+What is the main symptom you experience, such as heartburn or acid coming back into your mouth?Choices: Heartburn | Acid reflux | Both | Other
+Do your symptoms usually occur after eating a meal?Choices: Yes | No | Sometimes
+Do your symptoms become worse when you lie down?Choices: Yes | No | Sometimes
+Do your symptoms disturb or wake you up during the night?Choices: Yes | No
+Do you have difficulty swallowing food or liquids?Choices: Food | Liquids | Both | No difficulty
+Have you experienced vomiting along with your acid reflux symptoms?Choices: Yes | No
+Have you experienced any unexplained weight loss recently?Choices: Yes | No
+Are you experiencing chest pain or a burning sensation in your chest?Choices: Yes | No
+Do particular foods or drinks make your symptoms worse?Choices: Spicy food | Oily/fatty food | Tea/coffee | Carbonated drinks | Other | No specific trigger
+Have you taken any medicine to relieve acidity or acid reflux?Choices: Yes | No
+19. Gastritis
+Where in your upper abdomen do you feel the discomfort or pain?Choices: Upper middle | Upper left | Upper right | Around the whole upper abdomen
+What does your stomach pain feel like?Choices: Burning | Dull/aching | Cramping | Sharp | Other
+Does the pain become better or worse after eating?Choices: Better after eating | Worse after eating | No change | Not sure
+Have you been experiencing nausea or vomiting along with the stomach discomfort?Choices: Nausea | Vomiting | Both | Neither
+Have you noticed black stools or any blood in your vomit or stool?Choices: Black stools | Blood in vomit | Blood in stool | More than one | None
+Do you regularly take painkillers such as ibuprofen or aspirin?Choices: Regularly | Occasionally | No
+Do you consume alcohol regularly?Choices: Yes | No | Occasionally
+Are you experiencing bloating, fullness, or excessive gas?Choices: Bloating | Fullness | Excessive gas | More than one | None
+Have you experienced gastritis or similar stomach problems in the past?Choices: Yes | No | Not sure
+Have you taken any medicine to reduce your stomach symptoms or acidity?Choices: Yes | No
+20. Peptic Ulcer
+Where in your upper abdomen do you usually feel the pain?Choices: Upper middle | Upper left | Upper right | Other
+Does the pain feel like burning or a dull discomfort?Choices: Burning | Dull discomfort | Sharp pain | Cramping
+Does the pain usually occur before or after eating?Choices: Before eating | After eating | Both | No clear pattern
+Does the stomach pain wake you up during the night?Choices: Yes | No
+Have you experienced vomiting along with the stomach pain?Choices: Yes | No
+Have you ever vomited blood or material that looked like coffee grounds?Choices: Yes | No | Not sure
+Have you noticed black or tar-like stools?Choices: Yes | No | Not sure
+Do you regularly take painkillers such as ibuprofen or aspirin?Choices: Regularly | Occasionally | No
+Have you been diagnosed with a peptic ulcer in the past?Choices: Yes | No | Not sure
+Have you previously received treatment for an ulcer or acidity-related problem?Choices: Yes | No
+21. Diarrhea
+When did your loose stools or diarrhea first begin?Choices: Today | 1–3 days ago | 4–7 days ago | More than 1 week ago
+Approximately how many loose stools have you had in the last 24 hours?Choices: 1–2 | 3–5 | 6–10 | More than 10
+Are your stools mostly watery?Choices: Yes | No | Sometimes
+Have you noticed any blood or mucus in your stool?Choices: Blood | Mucus | Both | Neither
+Have you developed a fever along with the diarrhea?Choices: Yes | No
+Have you experienced vomiting along with the loose stools?Choices: Yes | No
+Are you experiencing abdominal cramps or pain?Choices: Mild cramps | Moderate cramps | Severe cramps | No pain
+Did the diarrhea begin after eating outside food or during/recently after travel?Choices: After eating outside food | After travel | Both | Neither
+Have you noticed that you are passing much less urine than usual?Choices: Yes | No | Not sure
+Have you been drinking oral rehydration solution or other fluids to prevent dehydration?Choices: Yes | No | Only small amounts
+22. Constipation
+When was your last bowel movement?Choices: Today | 1–2 days ago | 3–5 days ago | More than 5 days ago
+Are your stools hard or difficult to pass?Choices: Yes | No | Sometimes
+Do you need to strain when passing stool?Choices: Always | Sometimes | No
+Are you experiencing any abdominal pain along with the constipation?Choices: Mild pain | Moderate pain | Severe pain | No pain
+Have you experienced vomiting along with the constipation?Choices: Yes | No
+Have you noticed any blood in your stool?Choices: Yes | No | Not sure
+Are you experiencing abdominal bloating or a feeling of fullness?Choices: Yes | No
+Have you recently made any significant changes to your diet?Choices: Yes | No
+Are you drinking less water than you normally do?Choices: Yes | No | Not sure
+Have you taken any laxative or other medicine to relieve the constipation?Choices: Yes | No
+23. Food Poisoning
+How soon after eating the suspected food did your symptoms begin?Choices: Within 1 hour | 1–6 hours | 6–24 hours | More than 24 hours | Not sure
+How many times have you vomited or had loose stools since the symptoms began?Choices: 1–2 times | 3–5 times | 6–10 times | More than 10 times
+Are your stools watery?Choices: Yes | No | Sometimes
+Have you noticed any blood or mucus in your stool?Choices: Blood | Mucus | Both | Neither
+Have you developed a fever along with the vomiting or diarrhea?Choices: Yes | No
+Are you experiencing abdominal cramps or stomach pain?Choices: Mild | Moderate | Severe | No pain
+Did anyone else who ate the same food become sick?Choices: Yes | No | Not sure
+Did you recently eat food from a restaurant, street vendor, or other outside source?Choices: Yes | No
+Are you able to keep water and other fluids down without vomiting?Choices: Yes | No | Only small amounts
+Are you passing urine normally despite the vomiting or diarrhea?Choices: Yes | No | Less than usual | Not sure
+24. Vomiting
+When did the vomiting first begin?Choices: Today | 1–3 days ago | 4–7 days ago | More than 1 week ago
+Approximately how many times have you vomited since the symptoms began?Choices: 1–2 times | 3–5 times | 6–10 times | More than 10 times
+Have you noticed any blood in your vomit?Choices: Yes | No | Not sure
+Are you experiencing any abdominal pain along with the vomiting?Choices: Yes | No
+Have you also experienced loose stools or diarrhea?Choices: Yes | No
+Have you developed a fever along with the vomiting?Choices: Yes | No
+Are you experiencing a headache along with the vomiting?Choices: Yes | No
+Did the vomiting begin after eating a particular food or taking any medicine?Choices: After food | After medicine | After both | Neither | Not sure
+Are you able to keep water and other fluids down without vomiting?Choices: Yes | No | Only small amounts
+Have you noticed that you are passing less urine than usual?Choices: Yes | No | Not sure
+25. Abdominal Pain
+Where exactly is the abdominal pain located?Choices: Upper abdomen | Lower abdomen | Right side | Left side | Around the navel | Whole abdomen
+Did the abdominal pain begin suddenly or gradually?Choices: Suddenly | Gradually | Not sure
+How would you describe the pain you are experiencing?Choices: Cramping | Burning | Stabbing | Dull/aching | Other
+How severe is your abdominal pain?Choices: Mild | Moderate | Severe | Very severe
+Does eating make the abdominal pain better or worse?Choices: Better | Worse | No change | Not sure
+Have you experienced nausea or vomiting along with the abdominal pain?Choices: Nausea | Vomiting | Both | Neither
+Have you noticed any recent change in your bowel movements?Choices: Diarrhea | Constipation | Both | No change
+Do you have a fever along with the abdominal pain?Choices: Yes | No
+Have you noticed any blood in your stool or vomit?Choices: Blood in stool | Blood in vomit | Both | Neither
+Has the abdominal pain been getting worse since it started?Choices: Yes | No | About the same
+26. Appendicitis
+Where did your abdominal pain first begin?Choices: Around the navel | Right lower abdomen | Upper abdomen | Other
+Did the pain move toward the lower-right side of your abdomen?Choices: Yes | No | Not sure
+Has the abdominal pain become progressively worse?Choices: Yes | No | About the same
+Does moving, walking, or coughing make the abdominal pain worse?Choices: Yes | No
+Have you noticed a decrease in your appetite since the pain began?Choices: Yes | No
+Have you experienced nausea or vomiting along with the abdominal pain?Choices: Nausea | Vomiting | Both | Neither
+Have you developed a fever along with the abdominal pain?Choices: Yes | No
+Have you experienced diarrhea or constipation since the pain began?Choices: Diarrhea | Constipation | Both | Neither
+Have you noticed any swelling or unusual fullness in your abdomen?Choices: Yes | No
+Have you experienced similar abdominal pain in the past?Choices: Yes | No
+27. Gallstones
+Where exactly do you feel the abdominal pain?Choices: Right upper abdomen | Upper middle abdomen | Left side | Other
+Does the pain usually occur after eating fatty or oily food?Choices: Yes | No | Sometimes | Not sure
+Does the pain spread toward your right shoulder or back?Choices: Right shoulder | Back | Both | Neither
+How long does each episode of pain usually last?Choices: Less than 30 minutes | 30 minutes–6 hours | More than 6 hours
+Do you feel nauseated or vomit when you experience the pain?Choices: Nausea | Vomiting | Both | Neither
+Have you developed a fever along with the abdominal pain?Choices: Yes | No
+Have your eyes or skin become yellow recently?Choices: Yes | No
+Has your urine become darker than usual?Choices: Yes | No | Not sure
+Have you ever been diagnosed with gallstones before?Choices: Yes | No | Not sure
+Have you had an ultrasound scan to check for gallstones before?Choices: Yes | No
+28. Hemorrhoids (Piles)
+What color is the blood you have noticed during or after passing stool?Choices: Bright red | Dark red | Black | Not sure
+When do you usually notice the bleeding?Choices: While passing stool | After passing stool | Both | Not sure
+Do you experience pain or discomfort around the anus?Choices: Yes | No
+Have you noticed a lump or swelling near the anus?Choices: Yes | No
+Do you experience itching or irritation around the anus?Choices: Yes | No
+Are you currently experiencing constipation or hard stools?Choices: Yes | No | Sometimes
+Do you have to strain while passing stool?Choices: Always | Sometimes | No
+Have you experienced heavy or continuous bleeding from the anus?Choices: Yes | No
+Have you experienced hemorrhoids or piles in the past?Choices: Yes | No | Not sure
+Have you used any medicine or other treatment for the current problem?Choices: Yes | No
+29. Urinary Tract Infection (UTI)
+Do you feel burning or pain when you urinate?Choices: Yes | No
+Are you urinating more frequently than you normally do?Choices: Yes | No
+Do you feel a sudden or urgent need to urinate?Choices: Yes | No
+Are you experiencing pain or discomfort in your lower abdomen?Choices: Yes | No
+Have you noticed any blood in your urine?Choices: Yes | No | Not sure
+Have you developed a fever or chills along with your urinary symptoms?Choices: Fever | Chills | Both | Neither
+Are you experiencing pain in your side or lower back?Choices: Yes | No
+Have you experienced nausea or vomiting along with these symptoms?Choices: Yes | No
+Have you had a urinary tract infection in the past?Choices: Yes | No
+Have you taken any antibiotics for your current urinary symptoms?Choices: Yes | No
+30. Kidney Stones
+Where exactly do you feel the pain that you think may be related to a kidney stone?Choices: Side/flank | Lower abdomen | Groin | Back | Other
+How severe is the pain?Choices: Mild | Moderate | Severe | Very severe
+Does the pain come in waves, or does it remain constant?Choices: Comes in waves | Constant | Both | Not sure
+Have you noticed any blood in your urine?Choices: Yes | No | Not sure
+Do you feel burning or pain when you urinate?Choices: Yes | No
+Have you experienced nausea or vomiting along with the pain?Choices: Nausea | Vomiting | Both | Neither
+Have you developed a fever or chills?Choices: Fever | Chills | Both | Neither
+Have you noticed that you are passing less urine than usual?Choices: Yes | No | Not sure
+Have you had a kidney stone in the past?Choices: Yes | No
+Have you undergone a scan or other medical test for your current symptoms?Choices: Yes | No | Test scheduled
+31. Kidney Infection
+Have you developed a fever or experienced chills along with your other symptoms?Choices: Fever | Chills | Both | Neither
+Where exactly do you feel the pain in your side or back?Choices: Right side | Left side | Both sides | Lower back | Other
+Do you feel burning or pain when you urinate?Choices: Yes | No
+Are you urinating more frequently or feeling an urgent need to urinate?Choices: More frequent | Urgent need | Both | Neither
+Have you experienced nausea or vomiting along with your symptoms?Choices: Nausea | Vomiting | Both | Neither
+Have you noticed any blood in your urine?Choices: Yes | No | Not sure
+Have you noticed that you are passing less urine than usual?Choices: Yes | No | Not sure
+Have you had a urinary tract infection in the past?Choices: Yes | No
+Have you been diagnosed with any kidney disease before?Choices: Yes | No | Not sure
+Have you taken any antibiotics for your current symptoms?Choices: Yes | No
+32. Menstrual Cramps
+When did the menstrual pain begin in relation to your period?Choices: Before the period | At the start of the period | During the period | After the period
+How severe is your menstrual pain?Choices: Mild | Moderate | Severe | Very severe
+Where do you mainly feel the menstrual pain?Choices: Lower abdomen | Lower back | Pelvic area | Multiple areas
+Are your menstrual periods unusually heavy?Choices: Yes | No | Sometimes
+Do you notice blood clots during your menstrual period?Choices: Yes | No | Sometimes
+Have you experienced fever, vomiting, or dizziness along with the menstrual pain?Choices: Fever | Vomiting | Dizziness | More than one | None
+Are your menstrual cycles usually regular?Choices: Yes | No | Sometimes
+Does this type of pain occur during most of your menstrual periods?Choices: Yes | No | Sometimes
+Have you taken any medicine to relieve the menstrual pain?Choices: Yes | No
+Has the pain become different or more severe than it was during your previous periods?Choices: Yes | No | About the same
+33. PCOS (Polycystic Ovary Syndrome)
+Have your menstrual periods been irregular or unpredictable?Choices: Yes | No | Sometimes
+How often do you usually get your menstrual period?Choices: Every month | Every 35–60 days | Less often | It varies significantly
+Have you noticed unusual or increased hair growth on your face, chest, or abdomen?Choices: Yes | No | Slightly increased
+Have you experienced increased hair loss or thinning of the hair on your scalp?Choices: Yes | No | Slightly increased
+Have you noticed persistent acne or oily skin?Choices: Yes | No | Sometimes
+Have you experienced unexplained weight gain or difficulty losing weight?Choices: Yes | No | Not sure
+Have you noticed darkened or thickened skin, particularly around your neck, underarms, or groin?Choices: Yes | No | Not sure
+Have you had difficulty becoming pregnant or concerns about fertility?Choices: Yes | No | Not applicable
+Have you previously been diagnosed with PCOS or had an ultrasound showing polycystic ovaries?Choices: Yes | No | Not sure
+Are you currently taking any medicines or hormonal treatment for PCOS or menstrual irregularities?Choices: Yes | No | Not sure
+34. Diabetes
+Have you been feeling unusually thirsty or needing to drink water more frequently than usual?Choices: Yes | No
+Have you been urinating more frequently than you normally do, especially during the night?Choices: Yes | No
+Have you experienced unusual tiredness or weakness recently?Choices: Yes | No | Sometimes
+Have you experienced unexplained weight loss recently?Choices: Yes | No | Not sure
+Have you noticed increased hunger even after eating normally?Choices: Yes | No | Sometimes
+Have you experienced blurred or changing vision recently?Choices: Yes | No | Sometimes
+Have you noticed that cuts or wounds are taking longer than usual to heal?Choices: Yes | No | Not sure
+Have you experienced tingling, numbness, or burning sensations in your hands or feet?Choices: Yes | No | Sometimes
+Have you previously been diagnosed with diabetes or high blood sugar?Choices: Yes | No
+Are you currently taking insulin or any medicine to control your blood sugar?Choices: Insulin | Oral medicine | Both | No medication
+35. High Blood Pressure (Hypertension)
+Have you previously been diagnosed with high blood pressure?Choices: Yes | No
+Have you recently experienced headaches that are unusual or more frequent than normal?Choices: Yes | No | Sometimes
+Have you experienced dizziness or lightheadedness recently?Choices: Yes | No | Sometimes
+Have you experienced chest discomfort, pressure, or pain?Choices: Yes | No
+Have you experienced shortness of breath during normal activities or while resting?Choices: Yes | No | Sometimes
+Have you noticed any changes in your vision recently?Choices: Yes | No | Sometimes
+Have you experienced unusual tiredness or weakness recently?Choices: Yes | No | Sometimes
+Do you know your most recent blood pressure reading?Choices: Yes | No
+Are you currently taking any medicine to control your blood pressure?Choices: Yes | No
+Have you missed any doses of your blood-pressure medicine recently?Choices: Yes | No | Not applicable
+36. Heart Disease
+Have you experienced chest pain, pressure, tightness, or discomfort recently?Choices: Yes | No | Sometimes
+Does the chest discomfort occur during physical activity, at rest, or at both times?Choices: During activity | At rest | Both | Not sure
+Have you experienced shortness of breath during activity or while resting?Choices: During activity | At rest | Both | No
+Have you experienced a fast, irregular, or unusually strong heartbeat?Choices: Yes | No | Sometimes
+Have you experienced unusual tiredness or reduced ability to perform your usual activities?Choices: Yes | No | Sometimes
+Have you experienced swelling in your feet, ankles, or legs?Choices: Yes | No | Sometimes
+Have you experienced dizziness or fainting along with your other symptoms?Choices: Dizziness | Fainting | Both | Neither
+Have you previously been diagnosed with any heart condition?Choices: Yes | No | Not sure
+Have you previously undergone any heart tests or procedures, such as an ECG, echocardiogram, or angioplasty?Choices: Yes | No | Not sure
+Are you currently taking any medicines for a heart-related condition?Choices: Yes | No | Not sure
+37. Stroke
+Have you suddenly experienced weakness or numbness on one side of your face, arm, or leg?Choices: Yes | No | Not sure
+Have you suddenly noticed difficulty speaking or understanding what someone is saying?Choices: Yes | No
+Have you suddenly experienced difficulty seeing clearly in one or both eyes?Choices: Yes | No | Not sure
+Have you suddenly developed difficulty walking, loss of balance, or severe dizziness?Choices: Yes | No
+Have you suddenly experienced a very severe headache without an obvious cause?Choices: Yes | No
+Did any of these symptoms begin suddenly rather than gradually?Choices: Yes | No | Not sure
+Have you experienced facial drooping or difficulty smiling normally?Choices: Yes | No | Not sure
+Have you previously experienced a stroke or a mini-stroke (TIA)?Choices: Yes | No
+Have you previously been diagnosed with high blood pressure, diabetes, or high cholesterol?Choices: High blood pressure | Diabetes | High cholesterol | More than one | None
+Are you currently taking any medicines prescribed to reduce your risk of stroke?Choices: Yes | No | Not sure
+38. Arthritis
+Which joints are currently causing you pain or discomfort?Choices: Knees | Hands | Hips | Shoulders | Multiple joints | Other
+How long have you been experiencing joint pain?Choices: Less than a week | 1–4 weeks | 1–6 months | More than 6 months
+Do your joints become stiff, especially after waking up or remaining inactive for a long time?Choices: Yes | No | Sometimes
+Have you noticed swelling around any of your painful joints?Choices: Yes | No | Sometimes
+Do you experience increased joint pain when you move or put weight on the affected joint?Choices: Yes | No | Sometimes
+Have you noticed redness or warmth around any painful or swollen joints?Choices: Yes | No | Sometimes
+Does the joint pain interfere with walking, working, or performing your daily activities?Choices: Yes | No | Sometimes
+Have you previously experienced a joint injury or fracture in the affected area?Choices: Yes | No | Not sure
+Have you previously been diagnosed with arthritis or another joint condition?Choices: Yes | No | Not sure
+Have you taken any medicine or received any treatment for your joint pain?Choices: Yes | No | Not yet
+39. Osteoporosis
+Have you experienced persistent pain in your back, hips, or other bones?Choices: Yes | No | Sometimes
+Have you noticed that your height has decreased compared with your previous height?Choices: Yes | No | Not sure
+Have you experienced a bone fracture after a minor fall or injury?Choices: Yes | No
+Have you experienced sudden or severe back pain without a clear injury?Choices: Yes | No | Sometimes
+Have you noticed a change in your posture, such as developing a more rounded upper back?Choices: Yes | No | Not sure
+Have you previously been diagnosed with low bone density or osteoporosis?Choices: Yes | No | Not sure
+Have you ever had a bone density test such as a DEXA scan?Choices: Yes | No | Not sure
+Have you experienced any fractures of your wrist, hip, spine, or other bones in the past?Choices: Yes | No
+Have you been taking calcium or vitamin D supplements for bone health?Choices: Yes | No | Sometimes
+Have you been prescribed any medicine specifically to strengthen or protect your bones?Choices: Yes | No | Not sure
+40. Thyroid Disorders
+Have you recently experienced unexplained weight gain or weight loss?Choices: Weight gain | Weight loss | No change | Not sure
+Have you been feeling unusually tired or lacking energy?Choices: Yes | No | Sometimes
+Have you been unusually sensitive to cold or heat compared with other people?Choices: More sensitive to cold | More sensitive to heat | Neither | Both
+Have you noticed changes in your heartbeat, such as a fast, slow, or irregular heartbeat?Choices: Fast | Slow | Irregular | No change
+Have you noticed increased hair loss, dry skin, or changes in your skin texture?Choices: Yes | No | Sometimes
+Have you experienced constipation or unusually frequent bowel movements?Choices: Constipation | Frequent bowel movements | Neither | Both
+Have you noticed swelling or a visible enlargement in the front of your neck?Choices: Yes | No | Not sure
+Have you experienced changes in your menstrual cycle that are different from your usual pattern?Choices: Yes | No | Not applicable
+Have you previously been diagnosed with a thyroid disorder?Choices: Yes | No | Not sure
+Are you currently taking thyroid medication or receiving treatment for a thyroid condition?Choices: Yes | No | Not sure
+41. Anemia
+Have you been feeling unusually tired or weak during your daily activities?Choices: Yes | No | Sometimes
+Have you been experiencing dizziness or lightheadedness recently?Choices: Yes | No | Sometimes
+Do you become short of breath more easily than usual, especially during physical activity?Choices: Yes | No | Sometimes
+Have you noticed that your skin, lips, or the inside of your eyelids appear paler than usual?Choices: Yes | No | Not sure
+Have you been experiencing frequent headaches along with your tiredness or weakness?Choices: Yes | No | Sometimes
+Have you noticed unusual hair loss or changes in your nails?Choices: Yes | No | Sometimes
+Have you experienced a fast or unusually strong heartbeat recently?Choices: Yes | No | Sometimes
+Have you had unusually heavy menstrual bleeding or prolonged menstrual periods?Choices: Yes | No | Not applicable
+Have you previously been diagnosed with anemia or low hemoglobin?Choices: Yes | No | Not sure
+Are you currently taking iron, vitamin B12, folic acid, or another supplement for anemia?Choices: Iron | Vitamin B12 | Folic acid | More than one | None
+42. Skin Allergy / Dermatitis
+Have you developed a rash, redness, or irritation on your skin?Choices: Yes | No | Sometimes
+Where on your body did the skin problem first appear?Choices: Face | Hands | Arms | Legs | Chest/Back | Multiple areas | Other
+Does the affected area feel itchy?Choices: Yes, mildly | Yes, moderately | Yes, severely | No
+Have you noticed swelling, blisters, or fluid-filled bumps on the affected skin?Choices: Swelling | Blisters | Both | Neither
+Did the skin problem appear after using a new soap, cosmetic, cream, medicine, or other product?Choices: Yes | No | Not sure
+Have you noticed that certain foods, medicines, or environmental factors make the skin problem worse?Choices: Yes | No | Not sure
+Have you experienced fever or other symptoms along with the skin rash?Choices: Fever | Other symptoms | Both | Neither
+Have you experienced similar skin problems in the past?Choices: Yes | No | Sometimes
+Have you previously been diagnosed with eczema, dermatitis, or another skin allergy?Choices: Yes | No | Not sure
+Have you applied any cream, lotion, or medicine to treat the current skin problem?Choices: Yes | No
+43. Eczema
+Have you developed dry, itchy, or irritated patches of skin?Choices: Yes | No | Sometimes
+Which parts of your body are most affected by the eczema-like skin changes?Choices: Face | Hands | Arms | Legs | Elbows/Knees | Multiple areas | Other
+How severe is the itching in the affected areas?Choices: Mild | Moderate | Severe | Very severe
+Does your skin become red, swollen, cracked, or scaly during flare-ups?Choices: Redness | Swelling | Cracking | Scaling | More than one | None
+Have you noticed that the skin problem becomes worse after exposure to soaps, detergents, dust, heat, or certain fabrics?Choices: Yes | No | Not sure
+Does the itching become worse at night or interfere with your sleep?Choices: Yes | No | Sometimes
+Have you noticed any fluid, bleeding, or crusting from the affected skin?Choices: Fluid | Bleeding | Crusting | More than one | None
+Have you experienced similar episodes of eczema or itchy skin in the past?Choices: Yes | No | Sometimes
+Have you previously been diagnosed with eczema or another allergic skin condition?Choices: Yes | No | Not sure
+Are you currently using any prescribed cream, moisturizer, antihistamine, or other treatment for eczema?Choices: Yes | No | Not sure
+44. Fungal Skin Infection
+Have you noticed an itchy, red, or scaly patch on your skin?Choices: Yes | No | Sometimes
+Where is the affected area located?Choices: Feet | Groin | Scalp | Body | Nails | Multiple areas | Other
+Does the affected area have a circular or ring-shaped appearance?Choices: Yes | No | Not sure
+Have you noticed peeling, cracking, or scaling of the affected skin?Choices: Yes | No | Sometimes
+Have you noticed any changes in the color, thickness, or shape of your nails?Choices: Yes | No | Not applicable
+Have you experienced excessive sweating in the area affected by the infection?Choices: Yes | No | Sometimes
+Has anyone living with you recently had a similar skin or fungal infection?Choices: Yes | No | Not sure
+Have you recently used a shared towel, footwear, swimming facility, or changing area?Choices: Yes | No | Not sure
+Have you experienced a similar fungal infection in the past?Choices: Yes | No | Sometimes
+Have you already applied an antifungal cream, powder, shampoo, or medicine for the current problem?Choices: Yes | No | Not sure
+45. Acne
+Have you developed pimples, blackheads, whiteheads, or other acne-like spots on your skin?Choices: Yes | No | Sometimes
+Which part of your body is mainly affected by the acne?Choices: Face | Chest | Back | Shoulders | Multiple areas | Other
+Are the acne spots painful or tender when touched?Choices: Yes | No | Sometimes
+Have you noticed pus-filled pimples or larger, deep lumps under your skin?Choices: Yes | No | Sometimes
+How long have you been experiencing the current acne problem?Choices: Less than 1 week | 1–4 weeks | 1–6 months | More than 6 months
+Have you noticed that your acne becomes worse around your menstrual period?Choices: Yes | No | Sometimes | Not applicable
+Have you recently started using a new cosmetic, cream, skincare product, or hair product?Choices: Yes | No | Not sure
+Have you noticed dark marks or scars remaining after your pimples heal?Choices: Yes | No | Sometimes
+Have you experienced similar acne problems in the past?Choices: Yes | No | Sometimes
+Have you already used any cream, face wash, medicine, or other treatment for your acne?Choices: Yes | No
+46. Psoriasis
+Have you developed thick, red, or scaly patches on your skin?Choices: Yes | No | Sometimes
+Which areas of your body are mainly affected by these skin patches?Choices: Scalp | Elbows | Knees | Back | Multiple areas | Other
+Do the affected areas feel itchy, painful, or irritated?Choices: Itchy | Painful | Both | Neither
+Have you noticed white or silvery scales covering the affected skin?Choices: Yes | No | Not sure
+Have you noticed changes in your fingernails or toenails, such as pits, thickening, or discoloration?Choices: Yes | No | Not sure
+Does your skin condition become worse during periods of stress, illness, or weather changes?Choices: Yes | No | Sometimes | Not sure
+Have you experienced stiffness, swelling, or pain in your joints along with the skin problem?Choices: Yes | No | Sometimes
+Have you experienced similar skin patches in the past?Choices: Yes | No | Sometimes
+Have you previously been diagnosed with psoriasis or another chronic skin condition?Choices: Yes | No | Not sure
+Are you currently using any cream, ointment, tablets, or other treatment for psoriasis?Choices: Yes | No | Not sure
+47. Eye Allergy
+Have your eyes become itchy, red, or watery recently?Choices: Yes | No | Sometimes
+Are both eyes affected or only one eye?Choices: Both eyes | Right eye | Left eye | Not sure
+Do you experience frequent sneezing or a runny nose along with your eye symptoms?Choices: Yes | No | Sometimes
+Have you noticed swelling around your eyes or eyelids?Choices: Yes | No | Sometimes
+Do your eye symptoms become worse after exposure to dust, pollen, pets, or other allergens?Choices: Yes | No | Not sure
+Have you experienced a burning or gritty sensation in your eyes?Choices: Yes | No | Sometimes
+Have you noticed any thick or sticky discharge from your eyes?Choices: Yes | No | Sometimes
+Have you experienced any change or reduction in your vision along with these symptoms?Choices: Yes | No | Not sure
+Have you experienced similar eye allergy symptoms in the past?Choices: Yes | No | Sometimes
+Have you used any eye drops or allergy medicine for your current symptoms?Choices: Yes | No | Not sure
+48. Back Pain
+Where exactly do you feel the back pain?Choices: Upper back | Middle back | Lower back | Entire back
+When did your back pain begin?Choices: Today | 2–7 days ago | 1–4 weeks ago | More than 1 month ago
+Did the back pain begin after lifting something heavy, exercising, or making a sudden movement?Choices: Yes | No | Not sure
+Does the pain spread from your back to your legs, hips, or other areas?Choices: Yes, to one leg | Yes, to both legs | Yes, to the hip | No
+Have you experienced numbness, tingling, or weakness in your legs?Choices: Yes | No | Sometimes
+Does your back pain become worse when you bend, walk, sit, or stand?Choices: Bending | Walking | Sitting | Standing | More than one | None
+Have you experienced difficulty controlling your urine or bowel movements along with the back pain?Choices: Yes | No | Not sure
+Have you had a fever, unexplained weight loss, or unusual tiredness along with your back pain?Choices: Fever | Weight loss | Tiredness | More than one | None
+Have you experienced a significant fall, accident, or injury before the back pain started?Choices: Yes | No
+Have you taken any medicine, used heat therapy, or received treatment for the current back pain?Choices: Yes | No
+49. Neck Pain
+Where do you mainly feel the pain in your neck?Choices: Front | Back | Right side | Left side | Entire neck
+When did your neck pain begin?Choices: Today | 2–7 days ago | 1–4 weeks ago | More than 1 month ago
+Did the neck pain begin after sleeping in an unusual position, exercising, or making a sudden movement?Choices: Yes | No | Not sure
+Does the pain spread from your neck into your shoulder, arm, or hand?Choices: Yes, to one side | Yes, to both sides | No
+Have you experienced numbness, tingling, or weakness in your arms or hands?Choices: Yes | No | Sometimes
+Does moving your neck in certain directions make the pain worse?Choices: Yes | No | Sometimes
+Have you experienced a severe headache or dizziness along with your neck pain?Choices: Headache | Dizziness | Both | Neither
+Have you recently experienced a fall, accident, or injury involving your neck?Choices: Yes | No
+Have you experienced fever or unusual stiffness of the neck along with your symptoms?Choices: Yes | No | Not sure
+Have you taken any medicine or received any treatment for your current neck pain?Choices: Yes | No
+50. Insomnia
+How often do you have difficulty falling asleep at night?Choices: Never | Occasionally | Frequently | Almost every night
+Do you often wake up during the night and have difficulty falling asleep again?Choices: Yes | No | Sometimes
+Do you regularly wake up earlier than you intend to and cannot return to sleep?Choices: Yes | No | Sometimes
+How long does it usually take you to fall asleep after going to bed?Choices: Less than 15 minutes | 15–30 minutes | 30–60 minutes | More than 1 hour
+How many hours of sleep do you usually get each night?Choices: Less than 4 hours | 4–6 hours | 6–8 hours | More than 8 hours
+Do you feel tired, sleepy, or less energetic during the day because of poor sleep?Choices: Yes | No | Sometimes
+Have stress, anxiety, or major changes in your life recently affected your sleep?Choices: Yes | No | Not sure
+Do you regularly consume caffeine, tea, energy drinks, or other stimulants close to bedtime?Choices: Yes | No | Sometimes
+Do you use your phone, computer, or other screens shortly before going to sleep?Choices: Yes | No | Sometimes
+Have you used any medicine, sleep aid, or other treatment to help you sleep?Choices: Yes | No | Not sure

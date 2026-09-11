@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Priority {
+  NORMAL
+  HIGH_PRIORITY
+}
+
+model Patient {
+  id              String    @id @default(uuid())
+  phone           String    @unique
+  aadhaarId       String?   @unique
+  abhaId          String?   @unique
+  name            String
+  age             Int
+  gender          String
+  profilePhotoUrl String?
+  heightCm        Float?
+  weightKg        Float?
+  createdAt       DateTime  @default(now())
+  visits          Visit[]
+
+  @@map("patients")
+}
+
+model Visit {
+  id              String           @id @default(uuid())
+  patientId       String
+  patient         Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  status          String           @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, TRIAGE_ESCALATED
+  priority        Priority         @default(NORMAL)
+  language        String           @default("en-IN")
+  clinicalMode    String           @default("ALLOPATHIC") // ALLOPATHIC, AYUSH
+  activePathway   String?          // Stores the name of the illness (e.g., "Fever", "Migraine") if matched
+  bloodPressure   String?
+  temperature     Float?
+  spo2            Int?
+  bmi             Float?
+  createdAt       DateTime         @default(now())
+  completedAt     DateTime?
+  messages        Message[]
+  documents       Document[]
+  clinicalSummary ClinicalSummary?
+
+  @@map("visits")
+}
+
+model Message {
+  id              String   @id @default(uuid())
+  visitId         String
+  visit           Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  role            String   // user, assistant, system
+  content         String
+  audioTranscript Boolean  @default(false)
+  timestamp       DateTime @default(now())
+
+  @@map("messages")
+}
+
+model Document {
+  id            String   @id @default(uuid())
+  visitId       String
+  visit         Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  documentType  String   // PRESCRIPTION, LAB_REPORT, DISCHARGE_SUMMARY
+  rawText       String?
+  extractedJson Json?
+  fileUrl       String?
+  createdAt     DateTime @default(now())
+
+  @@map("documents")
+}
+
+model ClinicalSummary {
+  id                    String   @id @default(uuid())
+  visitId               String   @unique
+  visit                 Visit    @relation(fields: [visitId], references: [id], onDelete: Cascade)
+  chiefComplaint        String?
+  hpi                   String?
+  pastHistory           String?
+  medications           String?
+  allergies             String?
+  reviewOfSystems       String?
+  ayushAssessment       Json?    // Dashavidha Pariksha
+  redFlagFlags          Boolean  @default(false)
+  verifiedByDoctor      Boolean  @default(false)
+  doctorDiagnosis       String?
+  prescribedTests       String[] @default([])
+  prescribedMedications Json?
+  createdAt             DateTime @default(now())
+
+  @@map("clinical_summaries")
+}
+
+model OtpVerification {
+  id        String   @id @default(uuid())
+  phone     String
+  otpCode   String
+  expiresAt DateTime
+
+  @@map("otp_verifications")
+}
