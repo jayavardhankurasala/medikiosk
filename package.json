@@ -1,0 +1,17 @@
+{
+  "name": "medikiosk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MediKiosk - AI Multimodal Clinical Intake & Document Digitization Platform for Indian OPDs and AYUSH institutions",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build": "npm --prefix backend run build && npm --prefix frontend run build",
+    "start": "node backend/dist/index.js",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix frontend install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
