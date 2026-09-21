@@ -76,29 +76,13 @@ export default function Screen9VoiceChat({
     };
   }, [stopListening]);
 
-  // Trigger Confirmation Loop from typing
-  const handleTypeSubmit = () => {
-    if (isComplete || isSubmitting || loading) return;
-    const text = userInput.trim();
-    if (!text) return;
-    setPendingText(text);
-    setShowConfirmLoop(true);
-  };
+  // Central message sender to Gemini / Clinical pathways backend
+  const sendMessage = async (textToSend) => {
+    const text = (textToSend || userInput || '').trim();
+    if (!text || isSubmitting || loading) return;
 
-  // Trigger Confirmation Loop from quick touch pills
-  const handlePillClick = (optText) => {
-    if (isComplete || isSubmitting || loading) return;
-    setPendingText(optText);
-    setShowConfirmLoop(true);
-  };
-
-  // [YES] in Confirmation Loop -> Send to Gemini Backend
-  const handleConfirmYes = async () => {
-    if (isSubmitting || loading) return;
     setIsSubmitting(true);
     setLoading(true);
-
-    const text = pendingText;
     setShowConfirmLoop(false);
     setUserInput('');
     setPendingText('');
@@ -128,6 +112,10 @@ export default function Screen9VoiceChat({
           clinicalMode,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Server returned HTTP ${res.status}`);
+      }
 
       const data = await res.json();
       if (data.success) {
@@ -165,6 +153,8 @@ export default function Screen9VoiceChat({
 
         // Automatic Multilingual TTS
         speakText(data.nextQuestion, activeLanguage);
+      } else {
+        throw new Error(data.message || 'Unable to update question');
       }
     } catch (err) {
       console.error('Chat error:', err);
@@ -175,11 +165,31 @@ export default function Screen9VoiceChat({
         : 'How many days have you had this issue, and does anything relieve it?';
       setAiQuestion(fallbackQ);
       setOptions(['1-2 days', '3-5 days', 'More than a week']);
+      setTurnCount((c) => c + 1);
       speakText(fallbackQ, activeLanguage);
     } finally {
       setLoading(false);
       setIsSubmitting(false);
     }
+  };
+
+  // Direct submit from typing
+  const handleTypeSubmit = () => {
+    if (isComplete || isSubmitting || loading) return;
+    const text = userInput.trim();
+    if (!text) return;
+    sendMessage(text);
+  };
+
+  // Touch on quick option pills directly sends and updates questions immediately
+  const handlePillClick = (optText) => {
+    if (isComplete || isSubmitting || loading) return;
+    sendMessage(optText);
+  };
+
+  // [YES] in Voice Confirmation Loop -> Send confirmed speech to Backend
+  const handleConfirmYes = () => {
+    sendMessage(pendingText);
   };
 
   // [NO] in Confirmation Loop -> Clear and cancel
@@ -549,33 +559,68 @@ export default function Screen9VoiceChat({
             )}
           </div>
 
-          {/* Quick-Reply Option Pills */}
-          {options.length > 0 && !loading && (
-            <div style={{ width: '100%', marginTop: '14px' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
-                {options.map((opt, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handlePillClick(opt)}
-                    disabled={isSubmitting || loading}
-                    style={{
-                      padding: '10px 16px',
-                      borderRadius: themeObj.borderRadius.badge,
-                      backgroundColor: themeObj.colors.surface,
-                      border: `1.5px solid ${themeObj.colors.border}`,
-                      color: themeObj.colors.textPrimary,
-                      fontSize: '0.95rem',
-                      fontWeight: '600',
-                      cursor: isSubmitting || loading ? 'default' : 'pointer',
-                      opacity: isSubmitting || loading ? 0.6 : 1,
-                      boxShadow: themeObj.shadows.subtle,
-                    }}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
+          {/* Quick-Reply Option Pills or Loading Spinner */}
+          {loading ? (
+            <div
+              style={{
+                width: '100%',
+                marginTop: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '12px',
+                color: themeObj.colors.primaryDark,
+                fontWeight: '600',
+                fontSize: '0.95rem',
+              }}
+            >
+              <RefreshCw size={20} className="animate-spin" />
+              <span>
+                {activeLanguage.startsWith('te')
+                  ? 'ప్రశ్నలు అప్‌డేట్ అవుతున్నాయి...'
+                  : activeLanguage.startsWith('hi')
+                  ? 'प्रश्न अपडेट हो रहे हैं...'
+                  : 'Updating questions...'}
+              </span>
             </div>
+          ) : (
+            options.length > 0 && (
+              <div style={{ width: '100%', marginTop: '14px' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px' }}>
+                  {options.map((opt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handlePillClick(opt)}
+                      disabled={isSubmitting || loading}
+                      style={{
+                        padding: '10px 16px',
+                        borderRadius: themeObj.borderRadius.badge,
+                        backgroundColor: themeObj.colors.surface,
+                        border: `1.5px solid ${themeObj.colors.border}`,
+                        color: themeObj.colors.textPrimary,
+                        fontSize: '0.95rem',
+                        fontWeight: '600',
+                        cursor: isSubmitting || loading ? 'default' : 'pointer',
+                        opacity: isSubmitting || loading ? 0.6 : 1,
+                        boxShadow: themeObj.shadows.subtle,
+                        transition: 'all 0.15s ease-in-out',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = themeObj.colors.primary;
+                        e.currentTarget.style.backgroundColor = '#E8F7F5';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = themeObj.colors.border;
+                        e.currentTarget.style.backgroundColor = themeObj.colors.surface;
+                      }}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )
           )}
 
           {/* Typing Input */}

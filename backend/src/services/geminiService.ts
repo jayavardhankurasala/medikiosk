@@ -174,7 +174,7 @@ If the patient reports acute life-threatening symptoms:
       .join('\n');
 
     const response = await ai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       contents: `${systemInstruction}\n\nCONVERSATION HISTORY:\n${conversationContext}\n\nGenerate the next JSON response:`,
       config: {
         responseMimeType: 'application/json',
@@ -256,7 +256,7 @@ Extract all clinical information and return strictly valid JSON matching this sc
       try {
         const base64Data = fileBuffer.toString('base64');
         const response = await client.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash',
           contents: [
             {
               role: 'user',
@@ -361,7 +361,7 @@ OUTPUT STRICT JSON SCHEMA:
     if (client) {
       try {
         const response = await client.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-2.5-flash',
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
@@ -436,7 +436,7 @@ OUTPUT STRICT JSON SCHEMA:
       const prompt = `Classify the symptom. Reply ONLY with the exact illness name from this list: [${candidateKeys.join(', ')}]. If it does not match any, reply with 'UNKNOWN'.\n\nPatient symptom: "${userMessage}"`;
 
       const response = await client.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
       });
 
@@ -485,7 +485,7 @@ Question to translate: "${question}"
 Options to translate: ${JSON.stringify(options)}`;
 
       const response = await client.models.generateContent({
-        model: 'gemini-1.5-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',

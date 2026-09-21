@@ -66,11 +66,8 @@ export default function App() {
   const [visitId, setVisitId] = useState(initialSession?.visitId ?? 'visit-kiosk-live-1');
 
   // Intake Data
-  const [chiefComplaint, setChiefComplaint] = useState(initialSession?.chiefComplaint ?? 'Fever and cough for 3 days');
-  const [conversationTurns, setConversationTurns] = useState(initialSession?.conversationTurns ?? [
-    { role: 'assistant', content: 'What health concern brings you here today?' },
-    { role: 'user', content: 'Severe fever and cough for 3 days.' },
-  ]);
+  const [chiefComplaint, setChiefComplaint] = useState(initialSession?.chiefComplaint ?? '');
+  const [conversationTurns, setConversationTurns] = useState(initialSession?.conversationTurns ?? []);
   const [documents, setDocuments] = useState(initialSession?.documents ?? [
     { name: 'prescription_recent.jpg', size: '1.2 MB', status: 'Digitized ✓' },
   ]);
@@ -154,6 +151,11 @@ export default function App() {
   // Create Visit API Helper
   const createVisit = async (patientId, tokenOverride) => {
     const token = tokenOverride || authToken;
+    const freshId = `visit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    setVisitId(freshId);
+    setConversationTurns([]);
+    setChiefComplaint('');
+
     try {
       const res = await fetch('/api/visits', {
         method: 'POST',
@@ -175,6 +177,7 @@ export default function App() {
     } catch (err) {
       console.warn('Could not create DB visit record via API, using fallback ID:', err);
     }
+    return freshId;
   };
 
   // Login / Registration Success Callback
@@ -189,6 +192,8 @@ export default function App() {
   const handleResetToStart = () => {
     setActivePortal(null);
     setCurrentStep(2);
+    setVisitId(`visit-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`);
+    setChiefComplaint('');
     setConversationTurns([]);
     setDocuments([{ name: 'prescription_recent.jpg', size: '1.2 MB', status: 'Digitized ✓' }]);
   };
