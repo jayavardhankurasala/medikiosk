@@ -18,15 +18,54 @@ export interface MemoryPatient {
   age: number;
   gender: string;
   abhaId?: string;
+  abhaStatus?: string;
+  emergencyContact?: string;
   profilePhotoUrl?: string;
   heightCm?: number;
   weightKg?: number;
   createdAt: Date;
 }
 
+export interface PriorityAlert {
+  id: string;
+  patientId: string;
+  patientName: string;
+  tokenNumber?: string;
+  severity: 'HIGH' | 'MEDIUM' | 'LOW';
+  triggerCondition: string;
+  status: 'active' | 'acknowledged' | 'resolved';
+  acknowledgedBy?: string;
+  timestamp: Date;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  userName: string;
+  role: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  details?: string;
+  timestamp: Date;
+}
+
+export interface ConsentRecord {
+  consentId: string;
+  patientId: string;
+  userId?: string;
+  visitId?: string;
+  timestamp: Date;
+  purpose: string;
+  consentType?: string;
+  version: string;
+  status: 'granted' | 'revoked';
+}
+
 export interface MemoryVisit {
   id: string;
   patientId: string;
+  tokenNumber?: string;
   patientName?: string;
   patientAge?: number;
   patientGender?: string;
@@ -35,6 +74,7 @@ export interface MemoryVisit {
   clinicalMode: 'ALLOPATHIC' | 'AYUSH';
   activePathway?: string | null;
   status: string; // IN_PROGRESS, COMPLETED, TRIAGE_ESCALATED
+  triageStatus?: 'waiting_for_nurse' | 'vitals_recorded' | 'with_doctor' | 'completed';
   priority: 'NORMAL' | 'HIGH_PRIORITY';
   bloodPressure?: string;
   temperature?: number;
@@ -43,6 +83,9 @@ export interface MemoryVisit {
   weightKg?: number;
   bmi?: number;
   doctorDiagnosis?: string;
+  doctorNotes?: string;
+  doctorVerifiedAt?: Date;
+  verifiedDoctorName?: string;
   prescribedTests?: string[];
   prescribedMedications?: any[];
   messages: Array<{ id: string; role: string; content: string; timestamp: Date }>;
@@ -54,6 +97,10 @@ export interface MemoryVisit {
 
 const memoryPatients = new Map<string, MemoryPatient>();
 const memoryVisits = new Map<string, MemoryVisit>();
+const memoryAlerts = new Map<string, PriorityAlert>();
+const memoryAuditLogs: AuditLog[] = [];
+const memoryConsents = new Map<string, ConsentRecord>();
+let tokenCounter = 105;
 
 // Pre-seed mock queue with realistic initial patients
 function seedInitialQueue() {
@@ -112,6 +159,7 @@ function seedInitialQueue() {
   const v1: MemoryVisit = {
     id: 'v-001',
     patientId: p1.id,
+    tokenNumber: 'TK-101',
     patientName: p1.name,
     patientAge: p1.age,
     patientGender: p1.gender,
@@ -119,6 +167,7 @@ function seedInitialQueue() {
     language: 'en-IN',
     clinicalMode: 'ALLOPATHIC',
     status: 'TRIAGE_ESCALATED',
+    triageStatus: 'waiting_for_nurse',
     priority: 'HIGH_PRIORITY',
     bloodPressure: '150/95',
     temperature: 99.2,
@@ -137,6 +186,7 @@ function seedInitialQueue() {
   const v2: MemoryVisit = {
     id: 'v-002',
     patientId: p2.id,
+    tokenNumber: 'TK-102',
     patientName: p2.name,
     patientAge: p2.age,
     patientGender: p2.gender,
@@ -144,6 +194,7 @@ function seedInitialQueue() {
     language: 'hi-IN',
     clinicalMode: 'ALLOPATHIC',
     status: 'IN_PROGRESS',
+    triageStatus: 'vitals_recorded',
     priority: 'NORMAL',
     bloodPressure: '120/80',
     temperature: 101.4,
@@ -161,6 +212,7 @@ function seedInitialQueue() {
   const v3: MemoryVisit = {
     id: 'v-003',
     patientId: p3.id,
+    tokenNumber: 'TK-103',
     patientName: p3.name,
     patientAge: p3.age,
     patientGender: p3.gender,
@@ -168,6 +220,7 @@ function seedInitialQueue() {
     language: 'en-IN',
     clinicalMode: 'ALLOPATHIC',
     status: 'TRIAGE_ESCALATED',
+    triageStatus: 'with_doctor',
     priority: 'HIGH_PRIORITY',
     bloodPressure: '140/90',
     temperature: 98.6,
@@ -185,13 +238,15 @@ function seedInitialQueue() {
   const v4: MemoryVisit = {
     id: 'v-004',
     patientId: p4.id,
+    tokenNumber: 'TK-104',
     patientName: p4.name,
     patientAge: p4.age,
     patientGender: p4.gender,
     patientPhone: p4.phone,
     language: 'te-IN',
     clinicalMode: 'AYUSH',
-    status: 'IN_PROGRESS',
+    status: 'COMPLETED',
+    triageStatus: 'completed',
     priority: 'NORMAL',
     bloodPressure: '118/76',
     temperature: 98.4,
@@ -199,6 +254,14 @@ function seedInitialQueue() {
     heightCm: 162,
     weightKg: 58,
     bmi: 22.1,
+    doctorDiagnosis: 'Vata-Pitta Dushti (Amlapitta & Sandhigata Vata)',
+    doctorNotes: 'Prescribed Sutshekhar Ras and Yograj Guggulu with lukewarm water. Advised dietary modifications.',
+    doctorVerifiedAt: new Date(Date.now() - 120000),
+    verifiedDoctorName: 'Dr. Priya Sharma, BAMS',
+    prescribedMedications: [
+      { name: 'Sutshekhar Ras', dosage: '250mg', frequency: 'BD after meals' },
+      { name: 'Yograj Guggulu', dosage: '500mg', frequency: 'BD with lukewarm water' }
+    ],
     messages: [
       { id: 'm5', role: 'user', content: 'Routine glycemic review and chronic indigestion', timestamp: new Date() },
     ],
@@ -210,6 +273,75 @@ function seedInitialQueue() {
   memoryVisits.set(v2.id, v2);
   memoryVisits.set(v3.id, v3);
   memoryVisits.set(v4.id, v4);
+
+  // Seed Priority Alerts
+  const a1: PriorityAlert = {
+    id: 'alert-001',
+    patientId: p1.id,
+    patientName: p1.name,
+    tokenNumber: 'TK-101',
+    severity: 'HIGH',
+    triggerCondition: 'Crushing substernal chest pain radiating to left arm + Diaphoresis',
+    status: 'active',
+    timestamp: new Date(Date.now() - 550000),
+  };
+  const a2: PriorityAlert = {
+    id: 'alert-002',
+    patientId: p3.id,
+    patientName: p3.name,
+    tokenNumber: 'TK-103',
+    severity: 'HIGH',
+    triggerCondition: 'Acute respiratory distress with SpO2 89% on room air',
+    status: 'acknowledged',
+    acknowledgedBy: 'Sister Mary (Triage Lead)',
+    timestamp: new Date(Date.now() - 1750000),
+  };
+  memoryAlerts.set(a1.id, a1);
+  memoryAlerts.set(a2.id, a2);
+
+  // Seed Audit Logs
+  memoryAuditLogs.push(
+    {
+      id: 'log-001',
+      userId: 'usr-kiosk-01',
+      userName: 'Kiosk Terminal A',
+      role: 'patient',
+      action: 'CONSENT_GRANTED',
+      resource: 'PatientConsent',
+      resourceId: p1.id,
+      timestamp: new Date(Date.now() - 3500000),
+    },
+    {
+      id: 'log-002',
+      userId: 'usr-kiosk-01',
+      userName: 'Kiosk Terminal A',
+      role: 'patient',
+      action: 'INTAKE_COMPLETED',
+      resource: 'Visit',
+      resourceId: v1.id,
+      timestamp: new Date(Date.now() - 600000),
+    },
+    {
+      id: 'log-003',
+      userId: 'staff-nurse-02',
+      userName: 'Staff Nurse Anjali',
+      role: 'triage_staff',
+      action: 'VITALS_RECORDED',
+      resource: 'VisitVitals',
+      resourceId: v2.id,
+      timestamp: new Date(Date.now() - 900000),
+    },
+    {
+      id: 'log-004',
+      userId: 'doc-ayush-01',
+      userName: 'Dr. Priya Sharma (BAMS)',
+      role: 'ayush_practitioner',
+      action: 'CONSULTATION_VERIFIED',
+      resource: 'ClinicalSummary',
+      resourceId: v4.id,
+      timestamp: new Date(Date.now() - 120000),
+    }
+  );
 }
 
 seedInitialQueue();
@@ -236,6 +368,7 @@ export class AdaptiveHistoryService {
       if (patient.name) existing.name = patient.name;
       if (patient.age) existing.age = patient.age;
       if (patient.gender) existing.gender = patient.gender;
+      if (patient.abhaId) existing.abhaId = patient.abhaId;
       if (patient.aadhaarId !== undefined) existing.aadhaarId = patient.aadhaarId;
       if (patient.profilePhotoUrl) existing.profilePhotoUrl = patient.profilePhotoUrl;
       if (patient.heightCm !== undefined) existing.heightCm = patient.heightCm;
@@ -268,6 +401,11 @@ export class AdaptiveHistoryService {
     return memoryPatients.get(patientId);
   }
 
+  static getVisitsForPatient(patientId: string): MemoryVisit[] {
+    const list = Array.from(memoryVisits.values());
+    return list.filter((v) => v.patientId === patientId);
+  }
+
   static async createOrGetVisit(params: {
     patientId?: string;
     patientName?: string;
@@ -280,6 +418,7 @@ export class AdaptiveHistoryService {
     const visit: MemoryVisit = {
       id: visitId,
       patientId: params.patientId || uuidv4(),
+      tokenNumber: AdaptiveHistoryService.getNextTokenNumber(),
       patientName: params.patientName || patient?.name || 'Ramesh K.',
       patientAge: patient?.age || 38,
       patientGender: patient?.gender || 'Male',
@@ -287,6 +426,7 @@ export class AdaptiveHistoryService {
       language: params.language || 'hi-IN',
       clinicalMode: params.clinicalMode || 'ALLOPATHIC',
       status: 'IN_PROGRESS',
+      triageStatus: 'waiting_for_nurse',
       priority: 'NORMAL',
       messages: [
         {
@@ -319,6 +459,7 @@ export class AdaptiveHistoryService {
     const visit: MemoryVisit = {
       id: visitId,
       patientId: params.patientId,
+      tokenNumber: AdaptiveHistoryService.getNextTokenNumber(),
       patientName: patient?.name || 'Walk-in Patient',
       patientAge: patient?.age || 38,
       patientGender: patient?.gender || 'Male',
@@ -326,6 +467,7 @@ export class AdaptiveHistoryService {
       language: params.language || 'en-IN',
       clinicalMode: params.clinicalMode || 'ALLOPATHIC',
       status: 'IN_PROGRESS',
+      triageStatus: 'waiting_for_nurse',
       priority: 'NORMAL',
       messages: [],
       documents: [],
@@ -645,15 +787,125 @@ export class AdaptiveHistoryService {
     if (aiResponse?.isEmergency) {
       visit.status = 'TRIAGE_ESCALATED';
       visit.priority = 'HIGH_PRIORITY';
+
+      // Automatically register Priority Alert
+      const alertId = `alert-${Date.now()}`;
+      if (!Array.from(memoryAlerts.values()).some(a => a.patientId === visit.patientId && a.status === 'active')) {
+        memoryAlerts.set(alertId, {
+          id: alertId,
+          patientId: visit.patientId,
+          patientName: visit.patientName || 'Patient',
+          tokenNumber: visit.tokenNumber,
+          severity: 'HIGH',
+          triggerCondition: userMessage,
+          status: 'active',
+          timestamp: new Date(),
+        });
+      }
     } else if (aiResponse?.isComplete) {
       visit.status = 'COMPLETED';
       visit.completedAt = new Date();
     }
   }
 
+  static getNextTokenNumber(): string {
+    return `TK-${tokenCounter++}`;
+  }
+
+  static getAlerts(): PriorityAlert[] {
+    return Array.from(memoryAlerts.values()).sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  static acknowledgeAlert(alertId: string, staffName: string = 'Duty Nurse'): PriorityAlert | null {
+    const alert = memoryAlerts.get(alertId);
+    if (!alert) return null;
+    alert.status = 'acknowledged';
+    alert.acknowledgedBy = staffName;
+    AdaptiveHistoryService.addAuditLog({
+      userId: 'staff-triage',
+      userName: staffName,
+      role: 'triage_staff',
+      action: 'ALERT_ACKNOWLEDGED',
+      resource: 'PriorityAlert',
+      resourceId: alertId,
+    });
+    return alert;
+  }
+
+  static resolveAlert(alertId: string, staffName: string = 'Attending Doctor'): PriorityAlert | null {
+    const alert = memoryAlerts.get(alertId);
+    if (!alert) return null;
+    alert.status = 'resolved';
+    AdaptiveHistoryService.addAuditLog({
+      userId: 'doc-01',
+      userName: staffName,
+      role: 'doctor',
+      action: 'ALERT_RESOLVED',
+      resource: 'PriorityAlert',
+      resourceId: alertId,
+    });
+    return alert;
+  }
+
+  static getAuditLogs(): AuditLog[] {
+    return [...memoryAuditLogs].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }
+
+  static addAuditLog(entry: Omit<AuditLog, 'id' | 'timestamp'>): AuditLog {
+    const log: AuditLog = {
+      id: `log-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      ...entry,
+      timestamp: new Date(),
+    };
+    memoryAuditLogs.unshift(log);
+    return log;
+  }
+
+  static recordConsent(data: Omit<ConsentRecord, 'consentId' | 'timestamp'> & { details?: string }): ConsentRecord {
+    const consent: ConsentRecord = {
+      consentId: `cst-${Date.now()}`,
+      ...data,
+      timestamp: new Date(),
+    };
+    memoryConsents.set(consent.consentId, consent);
+    AdaptiveHistoryService.addAuditLog({
+      userId: data.userId || 'kiosk-user',
+      userName: 'Patient Consent Terminal',
+      role: 'patient',
+      action: 'CONSENT_RECORDED',
+      resource: 'PatientConsent',
+      resourceId: consent.consentId,
+      details: data.details || `Consent ${data.status} for purpose: ${data.purpose}`,
+    });
+    return consent;
+  }
+
+  static updateTriageStatus(
+    visitId: string,
+    status: 'waiting_for_nurse' | 'vitals_recorded' | 'with_doctor' | 'completed'
+  ): MemoryVisit | null {
+    const visit = memoryVisits.get(visitId);
+    if (!visit) return null;
+    visit.triageStatus = status;
+    if (status === 'completed') {
+      visit.status = 'COMPLETED';
+      visit.completedAt = new Date();
+    }
+    AdaptiveHistoryService.addAuditLog({
+      userId: 'staff-nurse-01',
+      userName: 'Triage Desk',
+      role: 'triage_staff',
+      action: `TRIAGE_STATUS_${status.toUpperCase()}`,
+      resource: 'Visit',
+      resourceId: visitId,
+    });
+    return visit;
+  }
+
   static clearAll() {
     AdaptiveHistoryService.activePathwaysMap.clear();
     memoryPatients.clear();
     memoryVisits.clear();
+    memoryAlerts.clear();
   }
 }

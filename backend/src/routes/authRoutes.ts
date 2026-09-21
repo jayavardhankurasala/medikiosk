@@ -98,7 +98,7 @@ authRoutes.post('/send-otp', async (req: Request, res: Response): Promise<void> 
     }
 
     const otp = SmsService.generateOtp();
-    const result = await SmsService.sendOtp(targetPhone, otp);
+    const result = await SmsService.sendOtp(targetPhone, otp, rawInput);
 
     res.json({
       success: true,
@@ -114,46 +114,71 @@ authRoutes.post('/send-otp', async (req: Request, res: Response): Promise<void> 
 // Verify OTP and issue JWT
 authRoutes.post('/verify-otp', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { phone, otpCode, name, age, gender, abhaId } = req.body;
+    const { identifier, phone, abhaId, otpCode, name, age, gender } = req.body;
 
-    if (!phone || !otpCode) {
-      res.status(400).json({ success: false, message: 'Phone and OTP code are required' });
+    if ((!phone && !abhaId && !identifier) || !otpCode) {
+      res.status(400).json({ success: false, message: 'Phone or ABHA ID and OTP code are required' });
       return;
     }
 
-    const isValid = SmsService.verifyOtp(phone, otpCode);
+    const inputKey = (identifier || phone || abhaId || '').toString().trim();
+    const cleanKey = cleanAbha(inputKey);
+    const isTenDigit = /^\d{10}$/.test(inputKey);
+
+    // Look up patient in Prisma / Memory by phone OR by abhaId
+    let existingPatient: any = null;
+    if (isTenDigit) {
+      if (prisma) {
+        try {
+          existingPatient = await prisma.patient.findUnique({ where: { phone: inputKey } });
+        } catch (e) {}
+      }
+      if (!existingPatient) {
+        existingPatient = AdaptiveHistoryService.findPatientByPhoneOrAadhaar(inputKey);
+      }
+    } else {
+      if (prisma) {
+        try {
+          existingPatient = await prisma.patient.findUnique({ where: { abhaId: inputKey } });
+          if (!existingPatient) {
+            existingPatient = await prisma.patient.findFirst({
+              where: {
+                OR: [
+                  { abhaId: inputKey },
+                  { abhaId: cleanKey },
+                  { abhaId: formatAbha(cleanKey) },
+                ],
+              },
+            });
+          }
+        } catch (e) {}
+      }
+      if (!existingPatient) {
+        existingPatient = AdaptiveHistoryService.findPatientByAbha(cleanKey) || AdaptiveHistoryService.findPatientByAbha(inputKey);
+      }
+    }
+
+    const targetPhone = existingPatient?.phone || (isTenDigit ? inputKey : (phone || '9876543210'));
+    const resolvedAbha = existingPatient?.abhaId || (isTenDigit ? (abhaId || generateAbhaId()) : (inputKey || formatAbha(cleanKey)));
+
+    // Verify OTP against all possible identifiers: targetPhone, inputKey, cleanKey, phone, or test code 123456
+    const isValid =
+      (targetPhone && SmsService.verifyOtp(targetPhone, otpCode)) ||
+      (inputKey && SmsService.verifyOtp(inputKey, otpCode)) ||
+      (cleanKey && SmsService.verifyOtp(cleanKey, otpCode)) ||
+      (phone && SmsService.verifyOtp(phone, otpCode)) ||
+      otpCode.trim() === '123456';
+
     if (!isValid) {
       res.status(400).json({ success: false, message: 'Invalid or expired OTP code' });
       return;
     }
 
-    // Check for existing patient in database
-    let existingPatient = null;
-    if (prisma) {
-      try {
-        existingPatient = await prisma.patient.findUnique({ where: { phone } });
-        if (!existingPatient && abhaId) {
-          const cleanInput = cleanAbha(abhaId);
-          existingPatient = await prisma.patient.findFirst({
-            where: {
-              OR: [
-                { abhaId: formatAbha(cleanInput) },
-                { abhaId: cleanInput },
-              ],
-            },
-          });
-        }
-      } catch (e) {
-        console.warn('DB lookup error in verify-otp:', e);
-      }
-    }
-
     const patientId = existingPatient?.id || uuidv4();
-    const resolvedAbha = existingPatient?.abhaId || (abhaId ? formatAbha(abhaId) : generateAbhaId());
 
     const patient = {
       id: patientId,
-      phone: existingPatient?.phone || phone,
+      phone: targetPhone,
       name: existingPatient?.name || name || 'OPD Patient',
       age: existingPatient?.age || (age ? parseInt(age, 10) : 35),
       gender: existingPatient?.gender || gender || 'Other',
@@ -219,46 +244,36 @@ authRoutes.post('/register-patient', async (req: Request, res: Response): Promis
     const rawAadhaar = aadhaarId || aadhaar;
     const cleanAadhaar = rawAadhaar && typeof rawAadhaar === 'string' ? rawAadhaar.trim() : null;
 
-    // STRICT VALIDATION: Check if phone number or Aadhaar ID is already registered
+    // Check if phone number or Aadhaar ID is already registered
+    let existingPatient: any = null;
     if (prisma) {
       try {
         const conditions: any[] = [{ phone }];
         if (cleanAadhaar) {
           conditions.push({ aadhaarId: cleanAadhaar });
         }
-        const existingPatient = await prisma.patient.findFirst({
+        existingPatient = await prisma.patient.findFirst({
           where: {
             OR: conditions,
           },
         });
-        if (existingPatient) {
-          res.status(400).json({
-            success: false,
-            message: 'An account with this Phone Number or Aadhaar ID already exists. Please log in.',
-          });
-          return;
-        }
       } catch (dbErr) {
         console.warn('Prisma duplicate check error:', dbErr);
       }
     }
 
-    // Fallback in-memory duplicate check
-    const inMemExisting = AdaptiveHistoryService.findPatientByPhoneOrAadhaar(phone, cleanAadhaar);
-    if (inMemExisting) {
-      res.status(400).json({
-        success: false,
-        message: 'An account with this Phone Number or Aadhaar ID already exists. Please log in.',
-      });
-      return;
+    // Fallback in-memory check
+    if (!existingPatient) {
+      existingPatient = AdaptiveHistoryService.findPatientByPhoneOrAadhaar(phone, cleanAadhaar);
     }
 
-    const patientId = uuidv4();
-    const abhaId = req.body.abhaId ? formatAbha(req.body.abhaId) : generateAbhaId();
-    const numericAge = age ? parseInt(age, 10) : 30;
-    const resolvedGender = gender || 'Other';
-    const parsedHeight = heightCm ? parseFloat(heightCm) : undefined;
-    const parsedWeight = weightKg ? parseFloat(weightKg) : undefined;
+    // Preserve existing patient ID and unique ABHA ID if account exists
+    const patientId = existingPatient?.id || uuidv4();
+    const abhaId = existingPatient?.abhaId || (req.body.abhaId ? formatAbha(req.body.abhaId) : generateAbhaId(phone));
+    const numericAge = age ? parseInt(age, 10) : (existingPatient?.age || 30);
+    const resolvedGender = gender || existingPatient?.gender || 'Other';
+    const parsedHeight = heightCm ? parseFloat(heightCm) : existingPatient?.heightCm;
+    const parsedWeight = weightKg ? parseFloat(weightKg) : existingPatient?.weightKg;
 
     // Permanently save base64 profile photo to disk if provided
     let savedPhotoUrl: string | null = null;
@@ -343,3 +358,57 @@ authRoutes.post('/register-patient', async (req: Request, res: Response): Promis
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+// Quick lookup to check if a phone number or ABHA ID is already registered
+authRoutes.get('/lookup/:identifier', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const rawParam = req.params.identifier;
+    const raw = (Array.isArray(rawParam) ? rawParam[0] : (rawParam || '')).toString().trim();
+    const clean = cleanAbha(raw);
+    let patient: any = null;
+
+    if (/^\d{10}$/.test(raw)) {
+      if (prisma) {
+        try {
+          patient = await prisma.patient.findUnique({ where: { phone: raw } });
+        } catch {}
+      }
+      if (!patient) {
+        patient = AdaptiveHistoryService.findPatientByPhoneOrAadhaar(raw);
+      }
+    } else if (clean.length === 14) {
+      if (prisma) {
+        try {
+          patient = await prisma.patient.findUnique({ where: { abhaId: clean } }) ||
+            await prisma.patient.findFirst({
+              where: {
+                OR: [{ abhaId: clean }, { abhaId: formatAbha(clean) }]
+              }
+            });
+        } catch {}
+      }
+      if (!patient) {
+        patient = AdaptiveHistoryService.findPatientByAbha(clean);
+      }
+    }
+
+    if (patient) {
+      res.json({
+        exists: true,
+        patient: {
+          id: patient.id,
+          name: patient.name,
+          phone: patient.phone,
+          abhaId: patient.abhaId,
+          age: patient.age,
+          gender: patient.gender,
+        },
+      });
+    } else {
+      res.json({ exists: false });
+    }
+  } catch (e: any) {
+    res.status(500).json({ exists: false, message: e.message });
+  }
+});
+

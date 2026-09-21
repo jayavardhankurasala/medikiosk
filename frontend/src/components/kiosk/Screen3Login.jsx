@@ -1,6 +1,23 @@
-import React, { useState, useRef } from 'react';
-import { User, Phone, ArrowRight, ShieldCheck, UserPlus, CheckCircle, RefreshCw, KeyRound, Camera, RotateCcw } from 'lucide-react';
-import { getStyles } from '../../styles/theme';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  User,
+  Phone,
+  ArrowRight,
+  ShieldCheck,
+  UserPlus,
+  CheckCircle,
+  RefreshCw,
+  KeyRound,
+  Camera,
+  RotateCcw,
+  Upload,
+  Activity,
+  Stethoscope,
+  Sparkles,
+  BarChart3,
+  Link2,
+} from 'lucide-react';
+import { getStyles, theme } from '../../styles/theme';
 import { useLanguage } from '../../context/LanguageContext';
 import { formatAbha, generateAbhaId, cleanAbha } from '../../utils/abhaUtils';
 
@@ -8,9 +25,11 @@ export default function Screen3Login({
   onLoginSuccess,
   languageCode: propLanguageCode,
   themeObj,
+  onRoleSelect,
 }) {
+  const currentTheme = themeObj || theme;
   const { language, t } = useLanguage();
-  const styles = getStyles(themeObj);
+  const styles = getStyles(currentTheme);
 
   const [identifier, setIdentifier] = useState('');
   const [detectedType, setDetectedType] = useState(null); // 'phone' | 'abha' | null
@@ -20,21 +39,54 @@ export default function Screen3Login({
   const [loading, setLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [resolvedPhone, setResolvedPhone] = useState('');
 
-  // Register New Patient Form State
-  const [showRegisterForm, setShowRegisterForm] = useState(false);
-  const [regStep, setRegStep] = useState(1); // 1: Demographics, 2: Photo Capture
-  const [regName, setRegName] = useState('');
-  const [regAge, setRegAge] = useState('');
-  const [regGender, setRegGender] = useState('Male');
-  const [regPhone, setRegPhone] = useState('');
-  const [regAadhaar, setRegAadhaar] = useState('');
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  // Persist registration form draft across browser reloads
+  const getSavedRegDraft = () => {
+    try {
+      const saved = sessionStorage.getItem('medikiosk_reg_draft');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  };
+  const regDraft = getSavedRegDraft();
+
+  // Register New Patient Form State (3 Steps: 1. Demographics, 2. Take Image, 3. Select Image & Create ABHA ID)
+  const [showRegisterForm, setShowRegisterForm] = useState(regDraft?.showRegisterForm ?? false);
+  const [regStep, setRegStep] = useState(regDraft?.regStep ?? 1);
+  const [regName, setRegName] = useState(regDraft?.regName ?? '');
+  const [regAge, setRegAge] = useState(regDraft?.regAge ?? '');
+  const [regGender, setRegGender] = useState(regDraft?.regGender ?? 'Male');
+  const [regPhone, setRegPhone] = useState(regDraft?.regPhone ?? '');
+  const [regAadhaar, setRegAadhaar] = useState(regDraft?.regAadhaar ?? '');
+  const [capturedPhoto, setCapturedPhoto] = useState(regDraft?.capturedPhoto ?? null);
+  const [regAbhaId, setRegAbhaId] = useState(regDraft?.regAbhaId ?? '');
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [regLoading, setRegLoading] = useState(false);
 
+  // Continuously save registration draft to sessionStorage
+  useEffect(() => {
+    if (showRegisterForm || regPhone || regName) {
+      try {
+        sessionStorage.setItem('medikiosk_reg_draft', JSON.stringify({
+          showRegisterForm,
+          regStep,
+          regName,
+          regAge,
+          regGender,
+          regPhone,
+          regAadhaar,
+          capturedPhoto,
+          regAbhaId,
+        }));
+      } catch {}
+    }
+  }, [showRegisterForm, regStep, regName, regAge, regGender, regPhone, regAadhaar, capturedPhoto, regAbhaId]);
+
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   // Auto-detection logic for ABHA ID vs Mobile Phone
   const handleIdentifierChange = (value) => {
@@ -73,6 +125,9 @@ export default function Screen3Login({
       const data = await res.json();
       if (data.success) {
         setOtpSent(true);
+        if (data.phone) {
+          setResolvedPhone(data.phone);
+        }
         if (data.mockOtp) {
           setMockOtpHint(data.mockOtp);
           setOtpCode(data.mockOtp); // Auto-fill in kiosk for instant testing
@@ -80,8 +135,8 @@ export default function Screen3Login({
       } else {
         setError(data.message || 'Failed to send OTP.');
       }
-    } catch (err) {
-      // Offline fallback
+    } catch {
+      // Offline / dev fallback
       setOtpSent(true);
       setMockOtpHint('123456');
       setOtpCode('123456');
@@ -109,9 +164,10 @@ export default function Screen3Login({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phone: clean.length === 10 ? clean : '9876543210',
-          abhaId: clean.length === 14 ? clean : null,
-          otpCode,
+          identifier: identifier.trim(),
+          phone: resolvedPhone || (detectedType === 'phone' ? clean : undefined),
+          abhaId: detectedType === 'abha' ? identifier.trim() : undefined,
+          otpCode: otpCode.trim(),
         }),
       });
       const data = await res.json();
@@ -123,7 +179,7 @@ export default function Screen3Login({
     } catch {
       // Fallback
       onLoginSuccess(
-        { id: 'p-default', name: 'Ramesh Kumar', phone: clean, abhaId: '91-4567-8901-2345', age: 38, gender: 'Male' },
+        { id: 'p-default', name: 'Ramesh Kumar', phone: resolvedPhone || clean, abhaId: detectedType === 'abha' ? identifier : '91-4567-8901-2345', age: 38, gender: 'Male' },
         'demo-jwt-token'
       );
     } finally {
@@ -136,15 +192,25 @@ export default function Screen3Login({
   const startCamera = async () => {
     setIsCameraActive(true);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } },
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      console.warn('Camera failed:', err);
+      console.warn('Camera stream unavailable:', err);
       setIsCameraActive(false);
     }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
   };
 
   const takePhoto = () => {
@@ -154,14 +220,9 @@ export default function Screen3Login({
     canvas.height = videoRef.current.videoHeight || 480;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-    const photoData = canvas.toDataURL('image/jpeg');
+    const photoData = canvas.toDataURL('image/jpeg', 0.85);
     setCapturedPhoto(photoData);
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-    setIsCameraActive(false);
+    stopCamera();
   };
 
   const retakePhoto = () => {
@@ -169,12 +230,72 @@ export default function Screen3Login({
     startCamera();
   };
 
-  // Submit Registration + Photo
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setCapturedPhoto(ev.target.result);
+        stopCamera();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Step 2 -> Step 3: Select Image and Proceed to Create ABHA ID
+  const handleProceedToCreateAbha = async () => {
+    if (!capturedPhoto) {
+      // Create a default SVG avatar if user chose to skip camera
+      const fallbackCanvas = document.createElement('canvas');
+      fallbackCanvas.width = 300;
+      fallbackCanvas.height = 300;
+      const ctx = fallbackCanvas.getContext('2d');
+      ctx.fillStyle = '#00C7A6';
+      ctx.fillRect(0, 0, 300, 300);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 110px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText((regName.trim()[0] || 'P').toUpperCase(), 150, 150);
+      setCapturedPhoto(fallbackCanvas.toDataURL('image/jpeg'));
+    }
+    stopCamera();
+
+    const cleanPhone = regPhone.replace(/\D/g, '');
+    if (!regAbhaId) {
+      try {
+        const checkRes = await fetch(`/api/auth/lookup/${cleanPhone}`);
+        const checkData = await checkRes.json();
+        if (checkData.exists && checkData.patient?.abhaId) {
+          setRegAbhaId(checkData.patient.abhaId);
+        } else {
+          // Generate deterministic unique ABHA ID for this phone
+          const d1 = '91';
+          const d2 = cleanPhone.slice(0, 4) || '9876';
+          const d3 = cleanPhone.slice(4, 8) || '5432';
+          const d4 = (cleanPhone.slice(8, 10) || '10') + '45';
+          setRegAbhaId(`${d1}-${d2}-${d3}-${d4}`);
+        }
+      } catch {
+        const d1 = '91';
+        const d2 = cleanPhone.slice(0, 4) || '9876';
+        const d3 = cleanPhone.slice(4, 8) || '5432';
+        const d4 = (cleanPhone.slice(8, 10) || '10') + '45';
+        setRegAbhaId(`${d1}-${d2}-${d3}-${d4}`);
+      }
+    }
+    setRegStep(3);
+    setError('');
+  };
+
+  // Submit Final Registration + ABHA Creation
   const handleCompleteRegistration = async () => {
     if (isSubmitting || regLoading) return;
     setIsSubmitting(true);
     setRegLoading(true);
     setError('');
+
+    const finalAbha = regAbhaId || generateAbhaId();
 
     try {
       const res = await fetch('/api/auth/register-patient', {
@@ -185,6 +306,7 @@ export default function Screen3Login({
           age: regAge || 30,
           gender: regGender,
           phone: regPhone.replace(/\D/g, ''),
+          abhaId: finalAbha,
           aadhaarId: regAadhaar.trim() || undefined,
           profilePhotoUrl: capturedPhoto,
         }),
@@ -205,8 +327,28 @@ export default function Screen3Login({
               ? 'An account with this Phone Number or Aadhaar ID already exists. Please log in.'
               : 'Registration failed. Please check your information.')
         );
-        return; // PREVENT ADVANCING!
+        return;
       }
+
+      // Clear draft on successful registration
+      try {
+        sessionStorage.removeItem('medikiosk_reg_draft');
+      } catch {}
+
+      // Log DPDP registration record
+      fetch('/api/visits/audit-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'PATIENT_REGISTERED_ABHA_LINKED',
+          userId: data.patient?.id || 'patient-kiosk',
+          userName: data.patient?.name || 'Kiosk Patient',
+          role: 'patient',
+          resource: 'Patient',
+          resourceId: data.patient?.id || 'patient-kiosk',
+          details: `Patient registered with Phone +91 ${regPhone} linked to ABHA ID ${finalAbha}.`,
+        }),
+      }).catch(() => {});
 
       onLoginSuccess(data.patient, data.token);
     } catch (networkErr) {
@@ -223,14 +365,22 @@ export default function Screen3Login({
       {/* Header */}
       <div>
         <h2 style={styles.title}>
-          {showRegisterForm ? (regStep === 1 ? t.registerTitle : 'Capture Patient Profile Photo') : t.headings.login}
+          {showRegisterForm
+            ? regStep === 1
+              ? (t.registerTitle || 'New Patient Registration')
+              : regStep === 2
+              ? 'Take Patient Image'
+              : 'Select Image & Create ABHA ID'
+            : (t.headings?.login || 'Patient Login & Verification')}
         </h2>
         <p style={{ ...styles.subtitle, marginTop: '6px' }}>
           {showRegisterForm
             ? regStep === 1
-              ? 'Enter patient demographics to generate a digital health record'
-              : 'Look at the kiosk camera to attach photo to ABHA health record'
-            : 'Access health profile using National Health Authority credentials'}
+              ? 'Enter phone number and demographics to start ABHA registration'
+              : regStep === 2
+              ? 'Look directly at the kiosk camera or upload a picture for your health ID'
+              : 'Link your phone number with your official Ayushman Bharat Health Account'
+            : 'Enter your 10-digit Phone Number or 14-digit ABHA ID to log in via OTP'}
         </p>
       </div>
 
@@ -240,34 +390,34 @@ export default function Screen3Login({
           {/* Smart Input Block */}
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <label style={{ fontSize: '0.95rem', fontWeight: '600', color: themeObj.colors.textPrimary }}>
-                {t.smartInputLabel} *
+              <label style={{ fontSize: '0.95rem', fontWeight: '600', color: currentTheme.colors.textPrimary }}>
+                {t.smartInputLabel || 'Phone Number or ABHA ID'} *
               </label>
               {detectedType && (
                 <span
                   style={{
                     fontSize: '0.8rem',
                     fontWeight: '700',
-                    color: themeObj.colors.primaryDark,
-                    backgroundColor: themeObj.colors.background,
+                    color: currentTheme.colors.primaryDark,
+                    backgroundColor: currentTheme.colors.background,
                     padding: '2px 8px',
                     borderRadius: '6px',
                   }}
                 >
-                  ✓ {detectedType === 'phone' ? t.detectedPhone : t.detectedAbha}
+                  ✓ {detectedType === 'phone' ? (t.detectedPhone || 'Mobile Phone') : (t.detectedAbha || 'ABHA ID')}
                 </span>
               )}
             </div>
 
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <div style={{ position: 'absolute', left: '16px', color: themeObj.colors.primary }}>
+              <div style={{ position: 'absolute', left: '16px', color: currentTheme.colors.primary }}>
                 {detectedType === 'phone' ? <Phone size={22} /> : <User size={22} />}
               </div>
               <input
                 type="text"
                 value={identifier}
                 onChange={(e) => handleIdentifierChange(e.target.value)}
-                placeholder={t.smartInputPlaceholder}
+                placeholder={t.smartInputPlaceholder || 'Enter 10-digit Mobile or 14-digit ABHA'}
                 style={{
                   ...styles.largeInput,
                   paddingLeft: '50px',
@@ -277,7 +427,7 @@ export default function Screen3Login({
             </div>
           </div>
 
-          {/* Send OTP Button (Shown before OTP sent) */}
+          {/* Send OTP Button */}
           {!otpSent && (
             <button
               onClick={handleSendOtp}
@@ -291,7 +441,7 @@ export default function Screen3Login({
                 </div>
               ) : (
                 <>
-                  <span>{t.sendOtp}</span>
+                  <span>{t.sendOtp || 'Send Verification OTP'}</span>
                   <ArrowRight size={22} />
                 </>
               )}
@@ -302,8 +452,8 @@ export default function Screen3Login({
           {otpSent && (
             <div
               style={{
-                backgroundColor: themeObj.mode === 'contrast' ? '#000000' : themeObj.colors.background,
-                border: `2px dashed ${themeObj.colors.primary}`,
+                backgroundColor: currentTheme.mode === 'contrast' ? '#000000' : currentTheme.colors.background,
+                border: `2px dashed ${currentTheme.colors.primary}`,
                 borderRadius: '16px',
                 padding: '20px',
                 display: 'flex',
@@ -313,7 +463,7 @@ export default function Screen3Login({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: '700', fontSize: '1.05rem', color: themeObj.colors.primaryDark, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontWeight: '700', fontSize: '1.05rem', color: currentTheme.colors.primaryDark, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <KeyRound size={18} />
                   <span>Enter 6-digit OTP code</span>
                 </span>
@@ -351,7 +501,7 @@ export default function Screen3Login({
                     <span>Verifying...</span>
                   </div>
                 ) : (
-                  <span>{t.verifyOtp}</span>
+                  <span>{t.verifyOtp || 'Verify & Continue'}</span>
                 )}
               </button>
             </div>
@@ -359,11 +509,11 @@ export default function Screen3Login({
 
           {/* OR Divider */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', margin: '4px 0' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: themeObj.colors.border }} />
-            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: themeObj.colors.textSecondary }}>
-              {t.or}
+            <div style={{ flex: 1, height: '1px', backgroundColor: currentTheme.colors.border }} />
+            <span style={{ fontSize: '0.85rem', fontWeight: '600', color: currentTheme.colors.textSecondary }}>
+              {t.or || 'OR'}
             </span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: themeObj.colors.border }} />
+            <div style={{ flex: 1, height: '1px', backgroundColor: currentTheme.colors.border }} />
           </div>
 
           {/* Register New Patient Button */}
@@ -375,19 +525,244 @@ export default function Screen3Login({
             }}
             style={styles.outlineButton}
           >
-            <UserPlus size={20} color={themeObj.colors.primary} />
-            <span>{t.registerBtn}</span>
+            <UserPlus size={20} color={currentTheme.colors.primary} />
+            <span>{t.registerBtn || 'New Patient? Create ABHA & Register'}</span>
           </button>
+
+          {/* CLINICAL STAFF & TRIAGE PORTAL ACCESS (Located directly on Login Screen) */}
+          <div
+            style={{
+              marginTop: '16px',
+              padding: '16px',
+              backgroundColor: '#F8FAFC',
+              borderRadius: '16px',
+              border: `1px solid #E2E8F0`,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span
+                style={{
+                  fontSize: '0.82rem',
+                  fontWeight: '800',
+                  color: '#475569',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                🏥 Staff & Clinician Portals
+              </span>
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: '700',
+                  backgroundColor: '#E2E8F0',
+                  color: '#334155',
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                }}
+              >
+                Staff Access
+              </span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {/* Triage Station Button */}
+              <button
+                type="button"
+                onClick={() => onRoleSelect && onRoleSelect('nurse')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid #BFDBFE',
+                  backgroundColor: '#EFF6FF',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '8px',
+                    backgroundColor: '#2563EB',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Activity size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#1E40AF' }}>
+                    Triage Station
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#3B82F6' }}>
+                    Nurse Vitals & Queue
+                  </div>
+                </div>
+              </button>
+
+              {/* Allopathic Doctor Button */}
+              <button
+                type="button"
+                onClick={() => onRoleSelect && onRoleSelect('doctor')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid #DDD6FE',
+                  backgroundColor: '#F5F3FF',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '8px',
+                    backgroundColor: '#7C3AED',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Stethoscope size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#6D28D9' }}>
+                    Allopathic Doctor
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#8B5CF6' }}>
+                    SOCRATES Consultation
+                  </div>
+                </div>
+              </button>
+
+              {/* AYUSH Specialist Button */}
+              <button
+                type="button"
+                onClick={() => onRoleSelect && onRoleSelect('ayush')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid #A7F3D0',
+                  backgroundColor: '#ECFDF5',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '8px',
+                    backgroundColor: '#059669',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Sparkles size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#065F46' }}>
+                    AYUSH Specialist
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#10B981' }}>
+                    दशविध परीक्षा Portal
+                  </div>
+                </div>
+              </button>
+
+              {/* Admin & Audit Dashboard Button */}
+              <button
+                type="button"
+                onClick={() => onRoleSelect && onRoleSelect('admin')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  border: '1px solid #FDE68A',
+                  backgroundColor: '#FFFBEB',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div
+                  style={{
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '8px',
+                    backgroundColor: '#D97706',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  <BarChart3 size={18} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#92400E' }}>
+                    Admin & Audit
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#F59E0B' }}>
+                    DPDP Trail & Alerts
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
-        /* --- FORM 2: NEW PATIENT REGISTRATION WITH CAMERA PHOTO STEP --- */
+        /* --- FORM 2: NEW PATIENT REGISTRATION WITH 3-STEP IMAGE & ABHA CREATION --- */
         <div>
-          {regStep === 1 ? (
-            /* Step 1: Demographics */
+          {regStep === 1 && (
+            /* Step 1: Phone & Demographics */
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div>
                 <label style={{ fontSize: '0.9rem', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                  {t.fullName} *
+                  {t.phoneNumber || 'Mobile Phone Number'} *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  maxLength={10}
+                  value={regPhone}
+                  onChange={(e) => setRegPhone(e.target.value)}
+                  placeholder="10-digit mobile number"
+                  style={styles.largeInput}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.9rem', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
+                  {t.fullName || 'Full Name'} *
                 </label>
                 <input
                   type="text"
@@ -402,7 +777,7 @@ export default function Screen3Login({
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ fontSize: '0.9rem', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                    {t.age} *
+                    {t.age || 'Age'} *
                   </label>
                   <input
                     type="number"
@@ -417,33 +792,18 @@ export default function Screen3Login({
                 </div>
                 <div>
                   <label style={{ fontSize: '0.9rem', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                    {t.gender} *
+                    {t.gender || 'Gender'} *
                   </label>
                   <select
                     value={regGender}
                     onChange={(e) => setRegGender(e.target.value)}
                     style={{ ...styles.largeInput, cursor: 'pointer' }}
                   >
-                    <option value="Male">{t.male}</option>
-                    <option value="Female">{t.female}</option>
-                    <option value="Other">{t.other}</option>
+                    <option value="Male">{t.male || 'Male'}</option>
+                    <option value="Female">{t.female || 'Female'}</option>
+                    <option value="Other">{t.other || 'Other'}</option>
                   </select>
                 </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '0.9rem', fontWeight: '600', display: 'block', marginBottom: '6px' }}>
-                  {t.phoneNumber} *
-                </label>
-                <input
-                  type="tel"
-                  required
-                  maxLength={10}
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="10-digit mobile"
-                  style={styles.largeInput}
-                />
               </div>
 
               <div>
@@ -455,7 +815,7 @@ export default function Screen3Login({
                   maxLength={16}
                   value={regAadhaar}
                   onChange={(e) => setRegAadhaar(e.target.value)}
-                  placeholder="Optional: 12-digit Aadhaar ID"
+                  placeholder="Optional: 12-digit Aadhaar"
                   style={styles.largeInput}
                 />
               </div>
@@ -463,7 +823,8 @@ export default function Screen3Login({
               <button
                 type="button"
                 onClick={() => {
-                  if (!regName.trim() || !regPhone || regPhone.replace(/\D/g, '').length < 10) {
+                  const cleanedPhone = regPhone.replace(/\D/g, '');
+                  if (!regName.trim() || cleanedPhone.length < 10) {
                     setError('Full Name and 10-digit Phone Number are required.');
                     return;
                   }
@@ -473,8 +834,8 @@ export default function Screen3Login({
                 }}
                 style={{ ...styles.primaryButton, marginTop: '8px' }}
               >
-                <span>Next: Capture Photo</span>
-                <Camera size={20} />
+                <span>Take Image 📸</span>
+                <ArrowRight size={20} />
               </button>
 
               <button
@@ -483,23 +844,41 @@ export default function Screen3Login({
                   setShowRegisterForm(false);
                   setError('');
                 }}
-                style={{ ...styles.outlineButton, minHeight: '48px', border: 'none', color: themeObj.colors.textSecondary }}
+                style={{ ...styles.outlineButton, minHeight: '48px', border: 'none', color: currentTheme.colors.textSecondary }}
               >
                 ← Back to Login
               </button>
             </div>
-          ) : (
-            /* Step 2: Camera Photo Capture */
+          )}
+
+          {regStep === 2 && (
+            /* Step 2: "Take Image" */
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
               <div
                 style={{
-                  width: '260px',
-                  height: '260px',
+                  width: '100%',
+                  padding: '12px 16px',
+                  backgroundColor: '#EFF6FF',
+                  borderRadius: '10px',
+                  border: '1px solid #BFDBFE',
+                  fontSize: '0.9rem',
+                  color: '#1E40AF',
+                  textAlign: 'center',
+                }}
+              >
+                📸 <strong>Take Image:</strong> Look directly at the kiosk camera or select an image from your device.
+              </div>
+
+              {/* Viewfinder / Preview */}
+              <div
+                style={{
+                  width: '240px',
+                  height: '240px',
                   borderRadius: '50%',
                   overflow: 'hidden',
-                  backgroundColor: '#000',
+                  backgroundColor: '#000000',
                   position: 'relative',
-                  border: `4px solid ${themeObj.colors.primary}`,
+                  border: `4px solid ${currentTheme.colors.primary}`,
                   boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   display: 'flex',
                   alignItems: 'center',
@@ -507,61 +886,259 @@ export default function Screen3Login({
                 }}
               >
                 {capturedPhoto ? (
-                  <img src={capturedPhoto} alt="Patient Snapshot" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={capturedPhoto} alt="Patient Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+              {/* Capture / Upload Controls */}
+              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 {!capturedPhoto ? (
-                  <button
-                    type="button"
-                    onClick={takePhoto}
-                    style={{ ...styles.primaryButton, flex: 1 }}
-                  >
-                    <Camera size={20} />
-                    <span>Take Photo</span>
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={retakePhoto}
-                    style={{ ...styles.outlineButton, flex: 1 }}
-                  >
-                    <RotateCcw size={18} />
-                    <span>Retake Photo</span>
-                  </button>
-                )}
+                  <>
+                    <button
+                      type="button"
+                      onClick={takePhoto}
+                      style={{ ...styles.primaryButton, flex: 1 }}
+                    >
+                      <Camera size={20} />
+                      <span>Take Photo</span>
+                    </button>
 
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                      style={{ ...styles.outlineButton, flex: 1 }}
+                    >
+                      <Upload size={18} />
+                      <span>Upload Image</span>
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={retakePhoto}
+                      style={{ ...styles.outlineButton, flex: 1 }}
+                    >
+                      <RotateCcw size={18} />
+                      <span>Retake Photo</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleProceedToCreateAbha}
+                      style={{
+                        ...styles.primaryButton,
+                        flex: 1.4,
+                        backgroundColor: '#10B981',
+                      }}
+                    >
+                      <span>Select Image & Create ABHA ID →</span>
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {!capturedPhoto && (
                 <button
                   type="button"
-                  onClick={handleCompleteRegistration}
-                  disabled={isSubmitting || regLoading}
+                  onClick={handleProceedToCreateAbha}
                   style={{
-                    ...styles.primaryButton,
-                    flex: 1,
-                    backgroundColor: '#10B981',
-                    opacity: isSubmitting || regLoading ? 0.7 : 1,
+                    background: 'none',
+                    border: 'none',
+                    color: currentTheme.colors.primaryDark,
+                    fontSize: '0.88rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
                   }}
                 >
-                  {isSubmitting || regLoading ? <RefreshCw size={20} className="animate-spin" /> : <CheckCircle size={20} />}
-                  <span>{isSubmitting || regLoading ? 'Registering...' : capturedPhoto ? 'Finish & Save' : 'Skip & Finish'}</span>
+                  Skip Camera & Proceed to Create ABHA ID →
                 </button>
-              </div>
+              )}
 
               <button
                 type="button"
-                onClick={() => setRegStep(1)}
-                style={{ background: 'none', border: 'none', color: themeObj.colors.textSecondary, cursor: 'pointer', fontSize: '0.9rem' }}
+                onClick={() => {
+                  stopCamera();
+                  setRegStep(1);
+                }}
+                style={{ background: 'none', border: 'none', color: currentTheme.colors.textSecondary, cursor: 'pointer', fontSize: '0.88rem' }}
               >
                 ← Back to Demographics
+              </button>
+            </div>
+          )}
+
+          {regStep === 3 && (
+            /* Step 3: "Select your image & create ABHA ID" */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Image & Demographics Verification Box */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '16px',
+                  padding: '16px',
+                  borderRadius: '16px',
+                  backgroundColor: '#F0FDF4',
+                  border: '1.5px solid #86EFAC',
+                }}
+              >
+                <div
+                  style={{
+                    width: '72px',
+                    height: '72px',
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '3px solid #16A34A',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)',
+                  }}
+                >
+                  <img
+                    src={capturedPhoto}
+                    alt={regName}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '800', color: currentTheme.colors.textPrimary }}>
+                      {regName}
+                    </span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: '700', backgroundColor: '#DCFCE7', color: '#16A34A', padding: '2px 6px', borderRadius: '4px' }}>
+                      ✓ Image Verified
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.88rem', color: currentTheme.colors.textSecondary, marginTop: '2px' }}>
+                    Age: <strong>{regAge}</strong> • Gender: <strong>{regGender}</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Generated ABHA ID Card */}
+              <div
+                style={{
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '16px',
+                  border: `2px solid ${currentTheme.colors.primary}`,
+                  padding: '20px',
+                  boxShadow: '0 4px 16px rgba(0, 199, 166, 0.12)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.8rem', fontWeight: '800', color: currentTheme.colors.primaryDark, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    SELF-CREATED AYUSHMAN BHARAT HEALTH ID
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setRegAbhaId(generateAbhaId())}
+                    title="Generate New Number"
+                    style={{ background: 'none', border: 'none', color: currentTheme.colors.primary, fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <RefreshCw size={13} />
+                    <span>Regenerate</span>
+                  </button>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: '1.8rem',
+                    fontWeight: '900',
+                    color: currentTheme.colors.textPrimary,
+                    fontFamily: 'monospace',
+                    letterSpacing: '0.06em',
+                  }}
+                >
+                  {regAbhaId}
+                </div>
+
+                {/* Linking Visual Badge */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px 14px',
+                    backgroundColor: '#E8F7F5',
+                    borderRadius: '10px',
+                    fontSize: '0.86rem',
+                    color: currentTheme.colors.primaryDark,
+                    fontWeight: '700',
+                  }}
+                >
+                  <Link2 size={18} />
+                  <span>
+                    Linked with Mobile: <strong>+91 {regPhone}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Either One Can Be Used Note */}
+              <div
+                style={{
+                  padding: '12px 14px',
+                  backgroundColor: '#EFF6FF',
+                  borderRadius: '10px',
+                  border: '1px solid #BFDBFE',
+                  fontSize: '0.85rem',
+                  color: '#1E40AF',
+                  lineHeight: 1.5,
+                }}
+              >
+                💡 <strong>Login Notice:</strong> Your phone number (<strong>+91 {regPhone}</strong>) and your new ABHA ID (<strong>{regAbhaId}</strong>) are now linked. You can use <strong>either one</strong> for future logins with OTP!
+              </div>
+
+              {/* Final Confirm Button */}
+              <button
+                type="button"
+                onClick={handleCompleteRegistration}
+                disabled={isSubmitting || regLoading}
+                style={{
+                  ...styles.primaryButton,
+                  backgroundColor: '#10B981',
+                  opacity: isSubmitting || regLoading ? 0.7 : 1,
+                  padding: '16px',
+                }}
+              >
+                {isSubmitting || regLoading ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <RefreshCw size={22} className="animate-spin" />
+                    <span>Creating ABHA ID & Account...</span>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={22} />
+                    <span>Confirm & Create ABHA Account</span>
+                  </div>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRegStep(2)}
+                style={{ background: 'none', border: 'none', color: currentTheme.colors.textSecondary, cursor: 'pointer', fontSize: '0.88rem' }}
+              >
+                ← Back to Image Capture
               </button>
             </div>
           )}
         </div>
       )}
 
+      {/* Error Banner */}
       {error && (
         <div
           style={{
@@ -608,8 +1185,9 @@ export default function Screen3Login({
         </div>
       )}
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: themeObj.colors.textSecondary, fontSize: '0.85rem' }}>
-        <ShieldCheck size={16} color={themeObj.colors.primary} />
+      {/* Bottom ABDM Compliance Tag */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: currentTheme.colors.textSecondary, fontSize: '0.85rem' }}>
+        <ShieldCheck size={16} color={currentTheme.colors.primary} />
         <span>ABDM Compliant • Digital Health ID Linked</span>
       </div>
     </div>

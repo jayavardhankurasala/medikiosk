@@ -131,6 +131,16 @@ patientRoutes.get('/patients/me/history', optionalAuth, async (req: Authenticate
       }
     }
 
+    if (!visits || visits.length === 0) {
+      const memVisits = AdaptiveHistoryService.getVisitsForPatient(patientId);
+      if (memVisits && memVisits.length > 0) {
+        visits = memVisits.map((mv) => ({
+          ...mv,
+          clinicalSummary: mv.summary,
+        }));
+      }
+    }
+
     // Map into normalized timeline format
     const timeline = visits.map((v) => ({
       id: v.id,

@@ -34,8 +34,15 @@ export function useMultilingualVoice(selectedLanguage = 'en-IN') {
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
+    // Detect secure context requirement (HTTPS / Localhost)
+    if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      console.warn('[STT Notice]: Web Speech API requires a Secure Context (HTTPS or localhost).');
+      setError('Microphone requires HTTPS or localhost. Please access via http://localhost:5173 or configure SSL.');
+      return;
+    }
+
     if (!SpeechRecognition) {
-      setError('Web Speech Recognition is not supported by this browser.');
+      setError('Web Speech Recognition is not supported by this browser. Please use Chrome or Edge, or type below.');
       return;
     }
 
@@ -61,8 +68,16 @@ export function useMultilingualVoice(selectedLanguage = 'en-IN') {
     recognition.onerror = (event) => {
       console.warn('[STT Error]:', event.error);
       setIsListening(false);
-      if (event.error !== 'no-speech') {
-        setError(`Speech recognition notice: ${event.error}`);
+      if (event.error === 'not-allowed') {
+        setError('Microphone access was denied. Please allow microphone permissions in your browser or type below.');
+      } else if (event.error === 'service-not-allowed') {
+        setError('Speech recognition service is disabled or blocked. Please use Chrome/Edge or type below.');
+      } else if (event.error === 'audio-capture') {
+        setError('No microphone found. Please connect a microphone or use keyboard / touch options.');
+      } else if (event.error === 'network') {
+        setError('Speech recognition network error. Please check your internet connection or type below.');
+      } else if (event.error !== 'no-speech') {
+        setError(`Speech recognition notice: ${event.error}. You can also type below.`);
       }
     };
 
@@ -84,14 +99,23 @@ export function useMultilingualVoice(selectedLanguage = 'en-IN') {
   }, [selectedLanguage]);
 
   const startListening = useCallback(() => {
-    if (!recognitionRef.current) return;
+    if (!recognitionRef.current) {
+      if (typeof window !== 'undefined' && !window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        setError('Microphone requires HTTPS or localhost. Please access via http://localhost:5173 or type below.');
+      } else {
+        setError('Speech recognition is not available on this browser. Please use Chrome/Edge or type below.');
+      }
+      return;
+    }
     setTranscript('');
     try {
-      // Ensure dynamic strict language before starting recognition
       recognitionRef.current.lang = selectedLanguage || 'en-IN';
       recognitionRef.current.start();
     } catch (err) {
-      console.warn('Error starting speech recognition:', err);
+      // If already started or aborting, ignore or retry
+      if (err.name !== 'InvalidStateError') {
+        console.warn('Error starting speech recognition:', err);
+      }
     }
   }, [selectedLanguage]);
 
@@ -182,5 +206,7 @@ export function useMultilingualVoice(selectedLanguage = 'en-IN') {
     speakText,
     isSpeaking,
     error,
+    setError,
+    hasRecognitionSupport: typeof window !== 'undefined' && !!(window.SpeechRecognition || window.webkitSpeechRecognition),
   };
 }

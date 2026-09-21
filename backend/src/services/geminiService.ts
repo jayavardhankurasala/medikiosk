@@ -35,10 +35,20 @@ export interface PhysicianClinicalSummary {
   pastHistory: string;
   medications: string;
   allergies: string;
+  familyHistory?: string;
+  personalHistory?: string;
   reviewOfSystems: string;
   ayushAssessment?: {
     prakriti?: string;
     vikriti?: string;
+    sara?: string;
+    samhanana?: string;
+    pramana?: string;
+    satmya?: string;
+    sattva?: string;
+    aharaShakti?: string;
+    vyayamaShakti?: string;
+    vaya?: string;
     agni?: string;
     koshtha?: string;
     aharaVihara?: string;
@@ -68,7 +78,7 @@ export class GeminiService {
 
   /**
    * Adaptive Clinical Question Generator
-   * Probes complaints using SOCRATES (Allopathic) or Dashavidha Pariksha (AYUSH)
+   * Probes complaints using full Allopathic SOCRATES or complete AYUSH Dashavidha Pariksha
    */
   static async generateNextQuestion(params: {
     userMessage: string;
@@ -85,38 +95,86 @@ export class GeminiService {
 
     const ai = new GoogleGenAI({ apiKey });
 
+    const chatHistory = history || [];
+    const assistantCount = chatHistory.filter(
+      (msg) => msg.role === 'assistant' || msg.role === 'model'
+    ).length;
+    const currentQuestionIndex = assistantCount + 1; // 1-indexed
+
     const systemInstruction = `
-You are an interactive clinical AI for "MediKiosk" in an Indian hospital OPD.
+You are an interactive clinical intake AI for "MediKiosk" in an Indian hospital Outpatient Department (OPD).
 Target Language: ${language} (Allowed codes: 'en-IN' for English, 'hi-IN' for Hindi, 'te-IN' for Telugu).
 Clinical Mode: ${clinicalMode}.
+Current Question Number: ${currentQuestionIndex} of a 7 to 10 question structured intake.
 
-CRITICAL MANDATE:
-You are an interactive clinical AI. You MUST ask exactly ONE question at a time.
-Wait for the user's response before asking the next question. Do not list multiple questions in a single response.
-If the user says 'I have a fever', your nextQuestion must be a single follow-up, like 'How many days have you had the fever?'.
-Count the conversation turns. Only after asking 5 to 7 individual questions sequentially, you may set isComplete: true.
+CRITICAL INTERVIEW MANDATE:
+1. You MUST ask strictly ONE question at a time as a single sentence string. Never combine or ask multiple questions in a single turn.
+2. Provide 2 to 4 touch quick-reply options tailored to the question so patients at a touchscreen kiosk can tap their answer easily.
+3. NEVER repeat a question or domain already covered in the conversation history. Review prior turns before generating.
+4. STRICT TRANSLATION: You must output "nextQuestion" and all "options" strictly in the requested language code (${language}).
+   - If 'te-IN', output entirely in authentic Telugu script (తెలుగు లిపి). Do NOT use English transliteration.
+   - If 'hi-IN', output entirely in authentic Devanagari script (देवनागरी लिपि).
+   - If 'en-IN', output in clear, simple Indian clinical English.
 
-RULES:
-1. Conduct a structured medical case-taking interview asking strictly ONE question at a time.
-2. If Clinical Mode is ALLOPATHIC: Use the SOCRATES framework (Site, Onset, Character, Radiation, Associations, Time course, Exacerbating/relieving factors, Severity).
-3. If Clinical Mode is AYUSH: Use Ayurvedic Dashavidha Pariksha (Prakriti constitution, Vikriti current imbalance, Agni digestive capacity, Koshtha bowel habits, Ahara-Vihara diet/lifestyle, Satmya suitability).
-4. RED-FLAG EMERGENCY DETECTION: If symptoms indicate acute life threats (crushing substernal chest pain, radiating arm/jaw pain, acute facial droop/arm weakness/slurred speech, severe stridor/acute dyspnea, suspected sepsis/unresponsiveness), immediately set "isEmergency": true.
-5. PREVENT LOOPING: You are a clinical AI. NEVER repeat a question you or the user have already mentioned. Review the conversation history array carefully before responding.
-6. ENFORCE 5 TO 7 QUESTIONS RULE: Count the conversation turns. Only after asking 5 to 7 individual questions sequentially, you may set isComplete: true.
-7. TELUGU PROMPT ENFORCEMENT: If the requested language is 'te-IN', you MUST generate the 'nextQuestion' and all 'options' entirely in the Telugu script. Do not use transliterated English.
-8. STRICT TRANSLATION: You must output the "nextQuestion" and all "options" strictly in the requested language code (en-IN, hi-IN, or te-IN). Do not mix languages.
-9. Provide 2 to 4 touch quick-reply options (strictly in the requested language) so patients can simply tap to answer.
-10. Output ONLY raw valid JSON conforming to the schema with nextQuestion as a single string.
+============================================================
+CLINICAL FLOW GUIDANCE (7 TO 10 QUESTIONS TOTAL):
+============================================================
+${clinicalMode === 'ALLOPATHIC' ? `
+--- ALLOPATHIC STRUCTURED CLINICAL SEQUENCE ---
+Step through this standard medical case-taking protocol across questions 1 to 10:
+- Question 1 (Chief Complaint - CC): Clarify primary symptom, exact onset timeline, and acute trigger.
+- Questions 2–4 (History of Presenting Illness - HPI via SOCRATES):
+  * Site & Radiation: Exact bodily location; does pain/discomfort spread anywhere?
+  * Onset & Character: Sudden vs gradual; sharp, dull, burning, throbbing, colicky, tight pressure.
+  * Severity & Timing: Severity (1–10 pain scale or mild/moderate/severe), constant vs intermittent, diurnal variation.
+  * Associated Symptoms: Accompanying red flags (fever, chills, nausea, vomiting, dyspnea, sweating, cough).
+  * Exacerbating / Relieving Factors: What worsens or relieves it (food, exertion, posture, rest, medication).
+- Question 5 (Past Medical & Surgical History): Known chronic conditions (Diabetes, Hypertension, CAD, Asthma, TB, past surgeries/hospital admissions).
+- Question 6 (Current Medications & Allergies): Ongoing prescription or OTC pills, and adverse drug reactions / drug allergies (Penicillin, Sulfa, NSAIDs, or 'No Known Drug Allergies').
+- Question 7 (Personal, Social & Family History): Dietary habits, smoking, alcohol, occupational physical stress, or family history of heart disease/stroke/diabetes.
+- Questions 8–10 (Review of Systems - ROS & Red-Flag Exclusions): Pertinent systemic screen for secondary organ involvement and emergency indicators.
+` : `
+--- AYUSH DASHAVIDHA PARIKSHA (दशविध परीक्षा) CLINICAL SEQUENCE ---
+Conduct a structured Ayurvedic Rogi Pariksha across questions 1 to 10, framing questions in simple patient-accessible language:
+- Question 1 (Chief Complaint & Vikriti): Current Rogi discomfort, primary Dosha vitiation symptoms (Vata: pain/dryness, Pitta: burning/acidity/inflammation, Kapha: heaviness/congestion/sluggishness).
+- Question 2 (Prakriti Assessment): Physical and metabolic baseline constitution (body frame, skin texture, thermal tolerance - heat vs cold sensitivity).
+- Question 3 (Ahara Shakti & Agni): Digestive capacity and digestive fire (Abhyavaharana Shakti [food consumption] & Jarana Shakti [digestion]; Agni state: Vishamagni [irregular], Tikshnagni [intense/hyperacidic], Mandagni [sluggish], Samagni [balanced]).
+- Question 4 (Koshtha & Mala-Mutra): Bowel motility (Krura Koshtha [constipated/hard], Madhyama [normal], Mridu [frequent/loose]) and Ahara habits (meal regularity, oily/spicy intake).
+- Question 5 (Sattva - Mental Temperament): Psychological resilience, stress levels, emotional tranquility, sleep quality (Nidra), and pain tolerance (Pravara, Madhyama, Avara).
+- Question 6 (Vyayama Shakti & Bala): Physical stamina, endurance, exercise capacity, and fatigue threshold during daily exertion.
+- Question 7 (Sara - Tissue Excellence): Quality and vitality of bodily Dhatus (Tvak/skin health, Rakta/vitality, Mamsa/muscle strength, Asthi/joint strength).
+- Question 8 (Samhanana & Pramana): Body compactness, skeletal build (Susamhata vs frail), posture, and weight balance.
+- Question 9 (Satmya & Ahara-Vihara): Wholesome adaptability (tolerance to dietary tastes/Rasa, weather changes, and daily lifestyle routine).
+- Question 10 (Vaya & Final Synthesis): Age stage (Bala, Madhyama, Vriddha) and chronological impact on current health.
+`}
+
+============================================================
+RED-FLAG EMERGENCY DETECTION:
+============================================================
+If the patient reports acute life-threatening symptoms:
+- Crushing substernal chest pain / pressure radiating to left arm or jaw with diaphoresis (sweating)
+- Acute focal neurological deficit (facial droop, unilateral arm/leg weakness, slurred speech / FAST)
+- Acute severe stridor, gasping, or respiratory distress (SpO2 < 90%)
+- Severe acute hemorrhage, unresponsiveness, or suspected septic shock
+-> IMMEDIATELY set "isEmergency": true.
+
+============================================================
+7 TO 10 QUESTION LIMIT & COMPLETION RULES:
+============================================================
+- Currently on Question #${currentQuestionIndex}.
+- If Question #${currentQuestionIndex} < 7: You MUST set "isComplete": false. The interview is ongoing.
+- If Question #${currentQuestionIndex} is 7, 8, or 9: You may set "isComplete": true ONLY if all critical clinical domains have been sufficiently elicited.
+- If Question #${currentQuestionIndex} >= 10: You MUST set "isComplete": true to conclude the intake and prepare the physician summary.
+- Output ONLY valid JSON matching the specified schema.
 `;
 
-    const chatHistory = history || [];
     const conversationContext = chatHistory
       .map((msg) => `${msg.role.toUpperCase()}: ${msg.content}`)
       .concat(`PATIENT: ${userMessage}`)
       .join('\n');
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-1.5-flash',
       contents: `${systemInstruction}\n\nCONVERSATION HISTORY:\n${conversationContext}\n\nGenerate the next JSON response:`,
       config: {
         responseMimeType: 'application/json',
@@ -130,7 +188,7 @@ RULES:
             options: {
               type: 'ARRAY',
               items: { type: 'STRING' },
-              description: '2 to 4 quick answer options',
+              description: '2 to 4 quick answer options in the requested language',
             },
             isEmergency: {
               type: 'BOOLEAN',
@@ -138,7 +196,7 @@ RULES:
             },
             isComplete: {
               type: 'BOOLEAN',
-              description: 'Whether 5 to 7 individual sequential questions have been completed',
+              description: 'Whether 7 to 10 individual sequential questions have been completed',
             },
           },
           required: ['nextQuestion', 'options', 'isEmergency', 'isComplete'],
@@ -149,21 +207,19 @@ RULES:
     const text = response.text?.trim() || '{}';
     const parsed: ChatTurnResponse = JSON.parse(text);
 
-    // Enforce 5 to 7 questions threshold: Count assistant turns in history
-    const assistantCount = chatHistory.filter(
-      (msg) => msg.role === 'assistant' || msg.role === 'model'
-    ).length;
-
+    // Enforce 7 to 10 questions threshold based on assistant turn count
     let isComplete = !!parsed.isComplete;
-    if (assistantCount < 5) {
-      isComplete = false; // Force false if less than 5 questions asked, overriding AI early drops
-    } else if (assistantCount >= 7) {
-      isComplete = true; // Complete intake once reaching 7 questions
+    if (assistantCount < 6) {
+      // Questions 1 to 6 must keep running
+      isComplete = false;
+    } else if (assistantCount >= 9) {
+      // 10th question must finalize
+      isComplete = true;
     }
 
     return {
       nextQuestion: parsed.nextQuestion || 'Could you please describe your symptoms in more detail?',
-      options: Array.isArray(parsed.options) ? parsed.options : [],
+      options: Array.isArray(parsed.options) && parsed.options.length > 0 ? parsed.options : ['Yes', 'No', 'Not sure'],
       isEmergency: !!parsed.isEmergency,
       isComplete,
     };
@@ -200,7 +256,7 @@ Extract all clinical information and return strictly valid JSON matching this sc
       try {
         const base64Data = fileBuffer.toString('base64');
         const response = await client.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           contents: [
             {
               role: 'user',
@@ -273,29 +329,39 @@ ${JSON.stringify(documents, null, 2)}
 
 OUTPUT STRICT JSON SCHEMA:
 {
-  "chiefComplaint": "Concise statement with duration",
-  "hpi": "Chronological history of presenting illness (SOCRATES details)",
-  "pastHistory": "Past medical/surgical conditions and comorbidities",
-  "medications": "Current active medications list",
+  "chiefComplaint": "Concise statement with duration and main trigger",
+  "hpi": "Chronological history of presenting illness (comprehensive SOCRATES: Site, Onset, Character, Radiation, Associations, Timing, Exacerbating/Relieving, Severity)",
+  "pastHistory": "Past medical/surgical conditions, chronic diseases, or prior hospitalizations",
+  "medications": "Current active medications list with dosages if known",
   "allergies": "Known drug/food allergies (or 'No known drug allergies (NKDA)')",
-  "reviewOfSystems": "Pertinent positives and negatives",
+  "familyHistory": "Relevant familial or hereditary diseases (or 'Non-contributory')",
+  "personalHistory": "Dietary habits, smoking, alcohol, sleep quality, and physical activity",
+  "reviewOfSystems": "Pertinent positives and negatives across cardiovascular, respiratory, gastrointestinal, and neurological systems",
   "ayushAssessment": {
-    "prakriti": "Vata/Pitta/Kapha assessment if AYUSH",
-    "vikriti": "Imbalance noted",
-    "agni": "Manda/Tikshna/Visham/Sama",
-    "koshtha": "Mrudu/Madhyama/Krura",
-    "aharaVihara": "Diet and lifestyle habits"
+    "prakriti": "Vata/Pitta/Kapha baseline constitution",
+    "vikriti": "Current Dosha morbidity and Dhatu dushti",
+    "sara": "Tissue excellence (Tvak, Rakta, Mamsa, Meda, Asthi, Majja, Shukra, Sattva)",
+    "samhanana": "Musculoskeletal compactness and body build (Susamhata/Madhyama/Asamhata)",
+    "pramana": "Bodily proportions and anthropometry",
+    "satmya": "Dietary and environmental habituation / adaptability",
+    "sattva": "Psychological temperament, stress resilience, and pain tolerance (Pravara/Madhyama/Avara)",
+    "aharaShakti": "Appetite and digestive assimilation capacity (Abhyavaharana & Jarana Shakti)",
+    "vyayamaShakti": "Physical endurance, stamina, and work capacity",
+    "vaya": "Age category assessment (Bala/Madhyama/Vriddha)",
+    "agni": "State of digestive fire (Vishamagni/Tikshnagni/Mandagni/Samagni)",
+    "koshtha": "Bowel habit (Krura/Madhyama/Mridu)",
+    "aharaVihara": "Dietary timing, spicy/oily habits, and lifestyle routines"
   },
   "redFlagFlags": boolean,
   "triageCategory": "ROUTINE" | "PRIORITY" | "EMERGENCY_RED_FLAG",
-  "suggestedDepartment": "General Medicine / Kayachikitsa / Cardiology / etc."
+  "suggestedDepartment": "General Medicine / Kayachikitsa / Cardiology / Panchakarma / etc."
 }
 `;
 
     if (client) {
       try {
         const response = await client.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           contents: prompt,
           config: {
             responseMimeType: 'application/json',
@@ -319,10 +385,20 @@ OUTPUT STRICT JSON SCHEMA:
       pastHistory: documents.length > 0 ? 'Hypertension, managed pharmacologically.' : 'No major prior hospitalizations reported.',
       medications: documents.flatMap(d => d.prescribedDrugs.map(p => `${p.name} (${p.dosage || ''})`)).join(', ') || 'No active daily medications noted.',
       allergies: 'No known drug allergies (NKDA).',
-      reviewOfSystems: 'Constitutional: alert, oriented. Cardiovascular & Respiratory: evaluated per triage rules.',
+      familyHistory: 'No known hereditary cardiovascular or metabolic disorders reported.',
+      personalHistory: 'Non-smoker, non-alcoholic. Regular mixed diet and moderate physical routine.',
+      reviewOfSystems: 'Constitutional: alert, oriented. Cardiovascular & Respiratory: evaluated per triage rules. No acute focal deficit.',
       ayushAssessment: clinicalMode === 'AYUSH' ? {
         prakriti: 'Pitta-Vata predominant',
         vikriti: 'Pitta Vriddhi with mild Agnimandya',
+        sara: 'Madhyama Tvak & Rakta Sara',
+        samhanana: 'Madhyama Samhanana (Moderate physical build)',
+        pramana: 'Madhyama Pramana (Normal proportions)',
+        satmya: 'Mishra Satmya (Adapted to habitual mixed diet)',
+        sattva: 'Madhyama Sattva (Moderate psychological tolerance)',
+        aharaShakti: 'Madhyama Jarana Shakti (Moderate digestion)',
+        vyayamaShakti: 'Madhyama Vyayama Shakti (Normal exercise tolerance)',
+        vaya: 'Madhyama Vaya (Adult stage of life)',
         agni: 'Vishama Agni',
         koshtha: 'Madhyama',
         aharaVihara: 'Irregular meal timings, spicy diet reported'
@@ -360,7 +436,7 @@ OUTPUT STRICT JSON SCHEMA:
       const prompt = `Classify the symptom. Reply ONLY with the exact illness name from this list: [${candidateKeys.join(', ')}]. If it does not match any, reply with 'UNKNOWN'.\n\nPatient symptom: "${userMessage}"`;
 
       const response = await client.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
       });
 
@@ -409,7 +485,7 @@ Question to translate: "${question}"
 Options to translate: ${JSON.stringify(options)}`;
 
       const response = await client.models.generateContent({
-        model: 'gemini-3.6-flash',
+        model: 'gemini-1.5-flash',
         contents: prompt,
         config: {
           responseMimeType: 'application/json',

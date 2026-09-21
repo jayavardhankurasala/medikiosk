@@ -1,0 +1,6 @@
+# Netlify Redirects for MediKiosk SPA and Backend API Proxy
+# Replace https://your-backend-url.onrender.com with your deployed backend server URL
+
+/api/*  https://medikiosk-api.onrender.com/api/:splat  200
+/uploads/*  https://medikiosk-api.onrender.com/uploads/:splat  200
+/*  /index.html  200

@@ -19,7 +19,7 @@ export default function Screen9VoiceChat({
   const { language, t } = useLanguage();
   const activeLanguage = propLanguage || language;
   const styles = getStyles(themeObj);
-  const { isListening, transcript, setTranscript, startListening, stopListening, speakText } = voice;
+  const { isListening, transcript, setTranscript, startListening, stopListening, speakText, error: voiceError } = voice;
 
   const [aiQuestion, setAiQuestion] = useState('');
   const [options, setOptions] = useState([]);
@@ -525,6 +525,26 @@ export default function Screen9VoiceChat({
                 <span style={{ width: '4px', height: '28px', backgroundColor: '#EF4444', borderRadius: '2px', animation: 'waveBar 0.8s infinite 0.3s' }} />
                 <span style={{ width: '4px', height: '16px', backgroundColor: '#EF4444', borderRadius: '2px', animation: 'waveBar 0.8s infinite 0.4s' }} />
                 <span style={{ width: '4px', height: '8px', backgroundColor: '#EF4444', borderRadius: '2px', animation: 'waveBar 0.8s infinite 0.2s' }} />
+              </div>
+            )}
+
+            {voiceError && !isListening && (
+              <div
+                style={{
+                  fontSize: '0.88rem',
+                  fontWeight: '500',
+                  color: '#DC2626',
+                  backgroundColor: '#FEF2F2',
+                  border: '1px solid #FCA5A5',
+                  padding: '6px 14px',
+                  borderRadius: '12px',
+                  marginTop: '4px',
+                  textAlign: 'center',
+                  maxWidth: '460px',
+                  lineHeight: '1.4',
+                }}
+              >
+                ⚠️ {voiceError}
               </div>
             )}
           </div>

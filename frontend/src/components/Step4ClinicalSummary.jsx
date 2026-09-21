@@ -260,11 +260,19 @@ export default function Step4ClinicalSummary({
               🌿 AYUSH Dashavidha Pariksha (दशविध परीक्षा मूल्यांकन)
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-              <div><b>प्रकृति (Prakriti):</b> {summaryData.ayushAssessment.prakriti}</div>
-              <div><b>विकृति (Vikriti):</b> {summaryData.ayushAssessment.vikriti}</div>
-              <div><b>अग्नि (Agni):</b> {summaryData.ayushAssessment.agni}</div>
-              <div><b>कोष्ठ (Koshtha):</b> {summaryData.ayushAssessment.koshtha}</div>
-              <div><b>आहार-विहार (Diet/Lifestyle):</b> {summaryData.ayushAssessment.aharaVihara}</div>
+              {summaryData.ayushAssessment.prakriti && <div><b>प्रकृति (Prakriti):</b> {summaryData.ayushAssessment.prakriti}</div>}
+              {summaryData.ayushAssessment.vikriti && <div><b>विकृति (Vikriti):</b> {summaryData.ayushAssessment.vikriti}</div>}
+              {summaryData.ayushAssessment.sara && <div><b>सार (Sara):</b> {summaryData.ayushAssessment.sara}</div>}
+              {summaryData.ayushAssessment.samhanana && <div><b>संहनन (Samhanana):</b> {summaryData.ayushAssessment.samhanana}</div>}
+              {summaryData.ayushAssessment.pramana && <div><b>प्रमाण (Pramana):</b> {summaryData.ayushAssessment.pramana}</div>}
+              {summaryData.ayushAssessment.satmya && <div><b>सात्म्य (Satmya):</b> {summaryData.ayushAssessment.satmya}</div>}
+              {summaryData.ayushAssessment.sattva && <div><b>सत्त्व (Sattva):</b> {summaryData.ayushAssessment.sattva}</div>}
+              {summaryData.ayushAssessment.aharaShakti && <div><b>आहार शक्ति (Ahara Shakti):</b> {summaryData.ayushAssessment.aharaShakti}</div>}
+              {summaryData.ayushAssessment.vyayamaShakti && <div><b>व्यायाम शक्ति (Vyayama Shakti):</b> {summaryData.ayushAssessment.vyayamaShakti}</div>}
+              {summaryData.ayushAssessment.vaya && <div><b>वय (Vaya):</b> {summaryData.ayushAssessment.vaya}</div>}
+              {summaryData.ayushAssessment.agni && <div><b>अग्नि (Agni):</b> {summaryData.ayushAssessment.agni}</div>}
+              {summaryData.ayushAssessment.koshtha && <div><b>कोष्ठ (Koshtha):</b> {summaryData.ayushAssessment.koshtha}</div>}
+              {summaryData.ayushAssessment.aharaVihara && <div><b>आहार-विहार (Diet/Lifestyle):</b> {summaryData.ayushAssessment.aharaVihara}</div>}
             </div>
           </div>
         )}

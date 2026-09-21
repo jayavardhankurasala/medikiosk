@@ -337,12 +337,60 @@ export default function NurseQueue({ onBackToKiosk, onSelectPatient }) {
 
                     {/* Patient Name & Token */}
                     <td style={{ padding: '16px 18px' }}>
-                      <div style={{ fontWeight: '800', color: theme.colors.textPrimary, fontSize: '1rem' }}>
-                        {visit.patientName || 'OPD Patient'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span
+                          style={{
+                            padding: '2px 8px',
+                            borderRadius: '6px',
+                            backgroundColor: '#0F172A',
+                            color: '#FFFFFF',
+                            fontWeight: '800',
+                            fontSize: '0.8rem',
+                          }}
+                        >
+                          {visit.tokenNumber || `TK-${visit.id.slice(0, 4)}`}
+                        </span>
+                        <div style={{ fontWeight: '800', color: theme.colors.textPrimary, fontSize: '1rem' }}>
+                          {visit.patientName || 'OPD Patient'}
+                        </div>
                       </div>
-                      <span style={{ fontSize: '0.8rem', color: theme.colors.textSecondary, display: 'block' }}>
-                        ID: {visit.id.slice(0, 8)} • +91 {visit.patientPhone}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+                        <span
+                          style={{
+                            fontSize: '0.72rem',
+                            fontWeight: '700',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            backgroundColor:
+                              visit.triageStatus === 'completed'
+                                ? '#DCFCE7'
+                                : visit.triageStatus === 'with_doctor'
+                                ? '#FEF3C7'
+                                : visit.triageStatus === 'vitals_recorded'
+                                ? '#EFF6FF'
+                                : '#F1F5F9',
+                            color:
+                              visit.triageStatus === 'completed'
+                                ? '#166534'
+                                : visit.triageStatus === 'with_doctor'
+                                ? '#92400E'
+                                : visit.triageStatus === 'vitals_recorded'
+                                ? '#1D4ED8'
+                                : '#64748B',
+                          }}
+                        >
+                          {visit.triageStatus === 'waiting_for_nurse'
+                            ? 'Awaiting Vitals'
+                            : visit.triageStatus === 'vitals_recorded'
+                            ? 'Vitals Recorded'
+                            : visit.triageStatus === 'with_doctor'
+                            ? 'With Doctor'
+                            : 'Completed'}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: theme.colors.textSecondary }}>
+                          • +91 {visit.patientPhone}
+                        </span>
+                      </div>
                     </td>
 
                     {/* Demographics */}
@@ -400,49 +448,76 @@ export default function NurseQueue({ onBackToKiosk, onSelectPatient }) {
 
                     {/* Actions */}
                     <td style={{ padding: '16px 18px', textAlign: 'right' }}>
-                      <div style={{ display: 'inline-flex', gap: '8px' }}>
-                        <button
-                          onClick={() => setSelectedVisitForVitals(visit)}
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid #2563EB',
-                            backgroundColor: '#EFF6FF',
-                            color: '#2563EB',
-                            fontSize: '0.82rem',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          {visit.bloodPressure ? 'Update Vitals' : '+ Record Vitals'}
-                        </button>
+                      <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-end' }}>
+                        <div style={{ display: 'inline-flex', gap: '6px' }}>
+                          <button
+                            onClick={() => setSelectedVisitForVitals(visit)}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #2563EB',
+                              backgroundColor: '#EFF6FF',
+                              color: '#2563EB',
+                              fontSize: '0.8rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {visit.bloodPressure ? 'Edit Vitals' : '+ Record Vitals'}
+                          </button>
 
-                        <button
-                          onClick={() =>
-                            onSelectPatient &&
-                            onSelectPatient({
-                              id: visit.id,
-                              token: visit.id.slice(0, 8),
-                              name: visit.patientName,
-                              ageGender: `${visit.patientAge}${visit.patientGender?.[0] || 'M'}`,
-                              complaint: firstMsg,
-                              patientId: visit.patientId,
-                              vitals: visit.bloodPressure ? `BP: ${visit.bloodPressure} | HR: 92 | Temp: ${visit.temperature}°F | BMI: ${visit.bmi}` : 'Pending',
-                            })
-                          }
-                          style={{
-                            padding: '6px 12px',
-                            borderRadius: '8px',
-                            border: `1px solid ${theme.colors.primary}`,
-                            backgroundColor: '#E8F7F5',
-                            color: theme.colors.primaryDark,
-                            fontSize: '0.82rem',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Doctor View →
-                        </button>
+                          <button
+                            onClick={() =>
+                              onSelectPatient &&
+                              onSelectPatient({
+                                id: visit.id,
+                                token: visit.tokenNumber || `TK-${visit.id.slice(0, 4)}`,
+                                name: visit.patientName,
+                                ageGender: `${visit.patientAge}${visit.patientGender?.[0] || 'M'}`,
+                                complaint: firstMsg,
+                                patientId: visit.patientId,
+                                vitals: visit.bloodPressure ? `BP: ${visit.bloodPressure} | Temp: ${visit.temperature}°F | SpO2: ${visit.spo2}% | BMI: ${visit.bmi}` : 'Pending',
+                              })
+                            }
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: '8px',
+                              border: `1px solid ${theme.colors.primary}`,
+                              backgroundColor: '#E8F7F5',
+                              color: theme.colors.primaryDark,
+                              fontSize: '0.8rem',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Doctor View →
+                          </button>
+                        </div>
+
+                        {visit.triageStatus !== 'with_doctor' && visit.triageStatus !== 'completed' && (
+                          <button
+                            onClick={async () => {
+                              await fetch(`/api/visits/${visit.id}/triage-status`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ status: 'with_doctor' }),
+                              });
+                              fetchQueue();
+                            }}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #CBD5E1',
+                              backgroundColor: '#FFFFFF',
+                              color: '#475569',
+                              fontSize: '0.74rem',
+                              fontWeight: '600',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Send to Doctor Room ➔
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

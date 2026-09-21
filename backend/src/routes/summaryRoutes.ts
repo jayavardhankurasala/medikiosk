@@ -209,3 +209,111 @@ summaryRoutes.post('/:visitId/complete', async (req: Request, res: Response): Pr
     res.status(500).json({ success: false, message: error.message });
   }
 });
+
+// 8. Triage Status Update (waiting_for_nurse -> vitals_recorded -> with_doctor -> completed)
+summaryRoutes.put('/:visitId/triage-status', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const visitId = String(req.params.visitId);
+    const status = req.body.status || req.body.triageStatus;
+    if (!status) {
+      res.status(400).json({ success: false, message: 'Status field is required' });
+      return;
+    }
+    const updated = AdaptiveHistoryService.updateTriageStatus(visitId, status);
+    if (!updated) {
+      res.status(404).json({ success: false, message: 'Visit not found' });
+      return;
+    }
+    res.json({ success: true, visit: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 9. Real-time Priority Alerts (Emergency Red Flags)
+summaryRoutes.get('/alerts', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const alerts = AdaptiveHistoryService.getAlerts();
+    res.json({ success: true, alerts });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+summaryRoutes.put('/alerts/:alertId/ack', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const alertId = String(req.params.alertId);
+    const { staffName } = req.body;
+    const updated = AdaptiveHistoryService.acknowledgeAlert(alertId, staffName);
+    res.json({ success: !!updated, alert: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+summaryRoutes.put('/alerts/:alertId/resolve', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const alertId = String(req.params.alertId);
+    const { staffName } = req.body;
+    const updated = AdaptiveHistoryService.resolveAlert(alertId, staffName);
+    res.json({ success: !!updated, alert: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 10. DPDP Act Audit Logs & Activity Tracker
+summaryRoutes.get('/audit-logs', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const logs = AdaptiveHistoryService.getAuditLogs();
+    res.json({ success: true, logs });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+summaryRoutes.post('/audit-log', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId, userName, role, action, resource, resourceId, visitId, details } = req.body;
+    const resolvedRole = role || (userId?.startsWith('dr') ? 'doctor' : userId?.startsWith('staff') ? 'triage_staff' : 'patient');
+    const resolvedUserName = userName || (resolvedRole === 'doctor' ? 'Attending Physician' : resolvedRole === 'triage_staff' ? 'Triage Staff' : 'Kiosk Patient');
+    const resolvedResource = resource || (visitId ? 'Visit' : 'System');
+    const resolvedResourceId = resourceId || visitId;
+
+    const log = AdaptiveHistoryService.addAuditLog({
+      userId: userId || 'kiosk-anon',
+      userName: resolvedUserName,
+      role: resolvedRole,
+      action: action || 'ACTION_PERFORMED',
+      resource: resolvedResource,
+      resourceId: resolvedResourceId,
+      details: details,
+    });
+    res.json({ success: true, log });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// 11. Patient Consent Recording (DPDP Act Compliance)
+summaryRoutes.post('/consent', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { patientId, userId, purpose, consentType, version, status, granted, visitId, details } = req.body;
+    const resolvedPurpose = purpose || consentType || 'OPD Clinical intake, vitals recording, and doctor review';
+    const resolvedStatus: 'granted' | 'revoked' = (status === 'revoked' || granted === false) ? 'revoked' : 'granted';
+
+    const consent = AdaptiveHistoryService.recordConsent({
+      patientId: patientId || 'p-kiosk',
+      userId: userId || patientId,
+      visitId,
+      consentType: consentType || resolvedPurpose,
+      purpose: resolvedPurpose,
+      version: version || '1.0',
+      status: resolvedStatus,
+      details: details,
+    });
+    res.json({ success: true, consent });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});

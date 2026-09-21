@@ -57,7 +57,9 @@ export default function DoctorSummary({
         const mapped = data.queue.map((v, idx) => ({
           id: v.id || `v-${idx + 1}`,
           patientId: v.patientId || `p-${idx + 1}`,
-          token: `#${String(idx + 1).padStart(3, '0')}`,
+          token: v.tokenNumber || v.token || `TK-${101 + idx}`,
+          tokenNumber: v.tokenNumber || v.token || `TK-${101 + idx}`,
+          triageStatus: v.triageStatus || (v.status === 'COMPLETED' ? 'completed' : 'vitals_recorded'),
           name: v.patientName || 'OPD Patient',
           ageGender: `${v.patientAge || 35}${v.patientGender ? v.patientGender[0] : 'M'}`,
           complaint: (v.messages && v.messages[0]?.content) || v.complaint || 'General Consultation',
@@ -82,7 +84,9 @@ export default function DoctorSummary({
           {
             id: 'v-001',
             patientId: 'p-001',
-            token: '#001',
+            token: 'TK-101',
+            tokenNumber: 'TK-101',
+            triageStatus: 'vitals_recorded',
             name: initialPatient.name || 'Ramesh K.',
             ageGender: initialPatient.ageGender || '28M',
             complaint: initialPatient.complaint || 'Fever and cough for 3 days',
@@ -90,9 +94,15 @@ export default function DoctorSummary({
             priority: 'NORMAL',
             status: 'IN_PROGRESS',
             summary: {
-              provisionalImpression: 'Suspected viral upper respiratory tract infection with mild pyrexia.',
-              symptomChronology: 'Symptoms began 3 days ago with sore throat, progressing to dry cough and fever.',
-              redFlagsExcluded: 'No shortness of breath, no chest pain, no hemoptysis.',
+              chiefComplaint: initialPatient.complaint || 'Fever and cough for 3 days',
+              hpi: 'Symptoms began 3 days ago with sore throat, progressing to dry cough and mild fever.',
+              pastHistory: 'No chronic medical illness reported.',
+              medications: 'None currently.',
+              allergies: 'No known drug allergies (NKDA).',
+              reviewOfSystems: 'Constitutional: fever present; Respiratory: cough present; ENT: sore throat.',
+              redFlagFlags: [],
+              triageCategory: 'NORMAL',
+              suggestedDepartment: 'General Medicine',
             },
             documents: [
               { name: 'prescription_previous.jpg', size: '1.2 MB', status: 'Digitized ✓' },
@@ -101,7 +111,9 @@ export default function DoctorSummary({
           {
             id: 'v-002',
             patientId: 'p-002',
-            token: '#002',
+            token: 'TK-102',
+            tokenNumber: 'TK-102',
+            triageStatus: 'vitals_recorded',
             name: 'Lakshmi P.',
             ageGender: '42F',
             complaint: 'Severe headache and nausea since yesterday morning',
@@ -109,16 +121,24 @@ export default function DoctorSummary({
             priority: 'HIGH_PRIORITY',
             status: 'IN_PROGRESS',
             summary: {
-              provisionalImpression: 'Tension-type headache vs Stage 1 Essential Hypertension with nausea.',
-              symptomChronology: 'Persistent throbbing frontal headache for 36 hours.',
-              redFlagsExcluded: 'No visual disturbance, no syncope, no neck stiffness.',
+              chiefComplaint: 'Severe headache and nausea since yesterday morning',
+              hpi: 'Persistent throbbing frontal headache for 36 hours with associated nausea.',
+              pastHistory: 'History of episodic tension headaches; borderline hypertension.',
+              medications: 'Occasional paracetamol 500mg SOS.',
+              allergies: 'No known drug allergies.',
+              reviewOfSystems: 'Neurological: frontal headache; Gastrointestinal: nausea without vomiting.',
+              redFlagFlags: [],
+              triageCategory: 'URGENT',
+              suggestedDepartment: 'General Medicine / Cardiology',
             },
             documents: [],
           },
           {
             id: 'v-003',
             patientId: 'p-003',
-            token: '#003',
+            token: 'TK-103',
+            tokenNumber: 'TK-103',
+            triageStatus: 'waiting_for_nurse',
             name: 'Suresh M.',
             ageGender: '60M',
             complaint: 'Joint pain in bilateral knees aggravated by walking',
@@ -126,9 +146,15 @@ export default function DoctorSummary({
             priority: 'NORMAL',
             status: 'IN_PROGRESS',
             summary: {
-              provisionalImpression: 'Bilateral Knee Osteoarthritis with mechanical pain.',
-              symptomChronology: 'Chronic dull ache exacerbated over the last 2 weeks.',
-              redFlagsExcluded: 'No joint erythema, no systemic fever.',
+              chiefComplaint: 'Joint pain in bilateral knees aggravated by walking',
+              hpi: 'Chronic bilateral knee pain exacerbated over the last 2 weeks when climbing stairs.',
+              pastHistory: 'Known bilateral knee osteoarthritis for 4 years.',
+              medications: 'Calcium + Vitamin D3 supplements.',
+              allergies: 'No known drug allergies.',
+              reviewOfSystems: 'Musculoskeletal: bilateral knee joint tenderness and mechanical pain.',
+              redFlagFlags: [],
+              triageCategory: 'NORMAL',
+              suggestedDepartment: 'Orthopaedics',
             },
             documents: [{ name: 'knee_xray_report.pdf', size: '2.4 MB', status: 'Digitized ✓' }],
           },
@@ -147,10 +173,46 @@ export default function DoctorSummary({
   }, []);
 
   // Update diagnosis and medication template when patient changes
-  const handleSelectPatient = (p) => {
+  const handleSelectPatient = async (p) => {
     setActivePatient(p);
-    setIsCompleted(p.status === 'COMPLETED');
+    setIsCompleted(p.status === 'COMPLETED' || p.triageStatus === 'completed');
     setConsultSuccessMsg('');
+
+    // If patient is not yet completed, transition triageStatus to with_doctor
+    if (p.triageStatus !== 'completed') {
+      fetch(`/api/visits/${p.id}/triage-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'with_doctor' }),
+      }).catch(() => {});
+
+      setQueue((prev) =>
+        prev.map((item) =>
+          item.id === p.id ? { ...item, triageStatus: 'with_doctor' } : item
+        )
+      );
+    }
+
+    // Fetch full clinical summary from backend if not already attached
+    if (!p.summary && p.id) {
+      try {
+        const res = await fetch(`/api/visits/${p.id}/summary`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.summary) {
+            setActivePatient((curr) => (curr?.id === p.id ? { ...curr, summary: data.summary } : curr));
+            setQueue((prev) =>
+              prev.map((item) =>
+                item.id === p.id ? { ...item, summary: data.summary } : item
+              )
+            );
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to retrieve full summary:', err);
+      }
+    }
+
     if (p.complaint?.toLowerCase().includes('headache') || p.complaint?.toLowerCase().includes('bp')) {
       setDoctorDiagnosis('Primary Cephalea / Hypertension Evaluation');
       setPrescribedTests(['Serum Electrolytes', 'Lipid Profile', 'ECG']);
@@ -216,12 +278,36 @@ export default function DoctorSummary({
           prescribedMedications: medicationsList.filter((m) => m.name.trim() !== ''),
         }),
       });
+
+      // Update triage status to completed
+      await fetch(`/api/visits/${activePatient.id || 'v-001'}/triage-status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      });
+
+      // Record DPDP / clinical audit log
+      await fetch('/api/visits/audit-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CONSULTATION_FINALIZED',
+          visitId: activePatient.id || 'v-001',
+          resource: 'Visit',
+          resourceId: activePatient.id || 'v-001',
+          userId: 'dr_allopathic_01',
+          userName: 'Dr. Ramesh Gupta, MD',
+          role: 'doctor',
+          details: `Allopathic consultation finalized: ${doctorDiagnosis}`,
+        }),
+      });
+
       setIsCompleted(true);
       setConsultSuccessMsg('Consultation finalized and saved to patient EMR record!');
       // Update status in local queue
       setQueue((prev) =>
         prev.map((item) =>
-          item.id === activePatient.id ? { ...item, status: 'COMPLETED' } : item
+          item.id === activePatient.id ? { ...item, status: 'COMPLETED', triageStatus: 'completed' } : item
         )
       );
     } catch {
@@ -350,16 +436,34 @@ export default function DoctorSummary({
                   boxShadow: isSelected ? '0 2px 8px rgba(124, 58, 237, 0.12)' : 'none',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span
-                    style={{
-                      fontSize: '0.82rem',
-                      fontWeight: '800',
-                      color: isSelected ? '#7C3AED' : theme.colors.textSecondary,
-                    }}
-                  >
-                    {p.token}
-                  </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span
+                      style={{
+                        fontSize: '0.82rem',
+                        fontWeight: '800',
+                        color: isSelected ? '#7C3AED' : theme.colors.textSecondary,
+                        backgroundColor: isSelected ? '#EDE9FE' : '#F3F4F6',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                      }}
+                    >
+                      {p.tokenNumber || p.token}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: '0.68rem',
+                        fontWeight: '600',
+                        color: p.triageStatus === 'completed' ? '#16A34A' : p.triageStatus === 'with_doctor' ? '#7C3AED' : '#2563EB',
+                        backgroundColor: p.triageStatus === 'completed' ? '#DCFCE7' : p.triageStatus === 'with_doctor' ? '#EDE9FE' : '#DBEAFE',
+                        padding: '1px 6px',
+                        borderRadius: '4px',
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {p.triageStatus === 'with_doctor' ? 'In Room' : p.triageStatus === 'vitals_recorded' ? 'Vitals Ready' : p.triageStatus?.replace(/_/g, ' ') || 'Waiting'}
+                    </span>
+                  </div>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     {isHighPriority && (
                       <span
@@ -486,8 +590,34 @@ export default function DoctorSummary({
                 </span>
               )}
             </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: theme.colors.textPrimary, margin: '4px 0 0 0' }}>
-              {activePatient.name} • {activePatient.ageGender} • {activePatient.token}
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: theme.colors.textPrimary, margin: '4px 0 0 0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span>{activePatient.name}</span>
+              <span style={{ fontSize: '1.1rem', fontWeight: '500', color: theme.colors.textSecondary }}>• {activePatient.ageGender}</span>
+              <span
+                style={{
+                  fontSize: '0.85rem',
+                  fontWeight: '800',
+                  backgroundColor: '#EDE9FE',
+                  color: '#7C3AED',
+                  padding: '3px 10px',
+                  borderRadius: '6px',
+                }}
+              >
+                {activePatient.tokenNumber || activePatient.token}
+              </span>
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '700',
+                  color: activePatient.triageStatus === 'completed' ? '#16A34A' : '#7C3AED',
+                  backgroundColor: activePatient.triageStatus === 'completed' ? '#DCFCE7' : '#EDE9FE',
+                  padding: '3px 8px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {activePatient.triageStatus === 'with_doctor' ? 'In Consultation' : activePatient.triageStatus?.replace(/_/g, ' ') || 'Waiting'}
+              </span>
             </h2>
           </div>
 
@@ -525,7 +655,7 @@ export default function DoctorSummary({
             1. Chief Complaint & History of Present Illness
           </span>
           <p style={{ fontSize: '1.12rem', fontWeight: '700', color: theme.colors.textPrimary, margin: '6px 0 2px 0' }}>
-            {activePatient.complaint}
+            {activePatient.summary?.chiefComplaint || activePatient.complaint || 'Not available'}
           </p>
           <span style={{ fontSize: '0.82rem', color: theme.colors.primaryDark, fontWeight: '600' }}>
             Interviewed per SOCRATES clinical intake framework
@@ -541,34 +671,92 @@ export default function DoctorSummary({
             backgroundColor: '#F8FAFC',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-            <Sparkles size={18} color="#6366F1" />
-            <span style={{ fontSize: '0.82rem', fontWeight: '800', color: '#4F46E5', textTransform: 'uppercase' }}>
-              2. Gemini AI Clinical Intake Summary
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Sparkles size={18} color="#6366F1" />
+              <span style={{ fontSize: '0.82rem', fontWeight: '800', color: '#4F46E5', textTransform: 'uppercase' }}>
+                2. Gemini AI Clinical Intake Summary
+              </span>
+            </div>
+            {activePatient.summary?.suggestedDepartment && (
+              <span
+                style={{
+                  fontSize: '0.74rem',
+                  fontWeight: '700',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  backgroundColor: '#EEF2FF',
+                  color: '#4338CA',
+                }}
+              >
+                Dept: {activePatient.summary.suggestedDepartment}
+              </span>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.92rem', color: theme.colors.textPrimary }}>
             <div>
-              <b>Provisional Clinical Impression: </b>
+              <b>History of Present Illness (HPI): </b>
               <span>
-                {activePatient.summary?.provisionalImpression ||
-                  'Patient exhibits symptoms consistent with acute upper respiratory tract involvement. Mild pyrexia and non-productive cough reported.'}
+                {activePatient.summary?.hpi || activePatient.summary?.symptomChronology || 'Not available'}
               </span>
             </div>
             <div>
-              <b>Symptom Chronology: </b>
+              <b>Past Medical History: </b>
               <span>
-                {activePatient.summary?.symptomChronology ||
-                  activePatient.complaint + '. Intake completed over structured clinical questioning turns.'}
+                {activePatient.summary?.pastHistory || 'Not available'}
               </span>
             </div>
             <div>
-              <b>Red Flags Excluded: </b>
-              <span style={{ color: '#16A34A', fontWeight: '600' }}>
-                {activePatient.summary?.redFlagsExcluded ||
-                  '✓ No acute chest pain, no stridor, no hemoptysis, no altered sensorium reported.'}
+              <b>Current Medications: </b>
+              <span>
+                {activePatient.summary?.medications || 'Not available'}
               </span>
+            </div>
+            <div>
+              <b>Allergies: </b>
+              <span style={{ color: activePatient.summary?.allergies && activePatient.summary.allergies.toLowerCase() !== 'none' && !activePatient.summary.allergies.toLowerCase().includes('no known') ? '#DC2626' : 'inherit' }}>
+                {activePatient.summary?.allergies || 'Not available'}
+              </span>
+            </div>
+            <div>
+              <b>Review of Systems: </b>
+              <span>
+                {activePatient.summary?.reviewOfSystems || 'Not available'}
+              </span>
+            </div>
+            {(activePatient.summary?.familyHistory || activePatient.summary?.personalHistory) && (
+              <div>
+                <b>Family & Personal History: </b>
+                <span>
+                  {[
+                    activePatient.summary?.familyHistory ? `Family: ${activePatient.summary.familyHistory}` : null,
+                    activePatient.summary?.personalHistory ? `Personal: ${activePatient.summary.personalHistory}` : null,
+                  ].filter(Boolean).join(' | ') || 'Not available'}
+                </span>
+              </div>
+            )}
+            {activePatient.summary?.ayushAssessment && (
+              <div>
+                <b>AYUSH Prakriti / Dosha Assessment: </b>
+                <span style={{ color: '#065F46', fontWeight: '600' }}>
+                  {activePatient.summary.ayushAssessment}
+                </span>
+              </div>
+            )}
+            <div>
+              <b>Triage Category & Red Flags: </b>
+              {activePatient.summary?.redFlagFlags && activePatient.summary.redFlagFlags.length > 0 ? (
+                <span style={{ color: '#DC2626', fontWeight: '700' }}>
+                  ⚠️ {activePatient.summary.triageCategory || 'URGENT'} - Flags: {activePatient.summary.redFlagFlags.join(', ')}
+                </span>
+              ) : activePatient.summary ? (
+                <span style={{ color: '#16A34A', fontWeight: '600' }}>
+                  ✓ {activePatient.summary.triageCategory || 'NORMAL'} - No acute red-flag conditions reported
+                </span>
+              ) : (
+                <span>Not available</span>
+              )}
             </div>
           </div>
         </div>

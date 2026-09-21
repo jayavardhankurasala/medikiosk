@@ -14,8 +14,9 @@ let isChecking = false;
 export async function isDbAvailable(): Promise<boolean> {
   const now = Date.now();
 
-  // Cache reachability for 60 seconds
-  if (isDatabaseReachable !== null && now - lastDbCheck < 60000) {
+  // Cache success for 60 seconds, but retry failed connections after 5 seconds
+  const cacheTtl = isDatabaseReachable ? 60000 : 5000;
+  if (isDatabaseReachable !== null && now - lastDbCheck < cacheTtl) {
     return isDatabaseReachable;
   }
 
@@ -29,15 +30,15 @@ export async function isDbAvailable(): Promise<boolean> {
   try {
     const checkPromise = prisma.$queryRaw`SELECT 1`;
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('DB Connect Timeout')), 1500)
+      setTimeout(() => reject(new Error('DB Connect Timeout')), 3500)
     );
 
     await Promise.race([checkPromise, timeoutPromise]);
     isDatabaseReachable = true;
-    console.log('[Database Status] PostgreSQL connected successfully.');
+    console.log('[Database Status] PostgreSQL connected successfully to Supabase.');
   } catch (err: any) {
     isDatabaseReachable = false;
-    console.log('[Database Status] PostgreSQL unreachable, using 0ms In-Memory cache.');
+    console.warn('[Database Status] PostgreSQL temporarily unreachable:', err.message);
   } finally {
     isChecking = false;
   }

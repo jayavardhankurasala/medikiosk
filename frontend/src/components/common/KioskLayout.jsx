@@ -297,9 +297,10 @@ export default function KioskLayout({
                   CLINICAL PORTALS
                 </div>
                 {[
-                  { id: 'nurse', label: 'Nurse Queue', icon: Users, color: '#2563EB' },
-                  { id: 'doctor', label: 'Doctor Review', icon: Stethoscope, color: '#7C3AED' },
-                  { id: 'admin', label: 'Admin Panel', icon: Shield, color: '#D97706' },
+                  { id: 'nurse', label: 'Nurse Triage', icon: Users, color: '#2563EB' },
+                  { id: 'doctor', label: 'Allopathic Doctor', icon: Stethoscope, color: '#7C3AED' },
+                  { id: 'ayush', label: 'AYUSH Specialist', icon: Stethoscope, color: '#059669' },
+                  { id: 'admin', label: 'Admin & Audit', icon: Shield, color: '#D97706' },
                 ].map((role) => {
                   const Icon = role.icon;
                   return (
