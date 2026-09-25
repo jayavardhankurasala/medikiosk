@@ -1,39 +1,54 @@
-# MediKiosk â€“ AI Multimodal Clinical Intake & Document Digitization Platform
+# ?? MediKiosk – AI Multimodal Clinical Intake & Document Digitization Platform
 
-MediKiosk is an AI-powered clinical history and case-taking kiosk platform designed for high-density hospital outpatient departments (OPDs) and AYUSH clinical institutions (Ministry of Ayush / AIIMS / Tertiary Hospitals).
+MediKiosk is an advanced, AI-powered clinical history and case-taking kiosk platform engineered for high-density hospital outpatient departments (OPDs) and AYUSH clinical institutions.
 
-## Key Capabilities
-1. **Multilingual Touch & Voice Intake**: Web Speech API (`SpeechRecognition` & `SpeechSynthesis`) supporting Hindi, English, Tamil, Telugu, Kannada, Malayalam, and Bengali.
-2. **Clinical Reasoning & Adaptive Branching**: Powered by Gemini 2.5 Flash (`@google/genai`) adhering to:
-   - **SOCRATES** framework (Site, Onset, Character, Radiation, Associations, Timing, Exacerbating/relieving, Severity) for allopathic OPDs.
-   - **Dashavidha Pariksha** (Prakriti, Vikriti, Agni, Koshtha, Ahara-Vihara, etc.) for AYUSH OPDs.
-3. **Real-time Red-Flag Emergency Triage**: Instant detection of life-threatening presentations (e.g., myocardial infarction, acute stroke signs, critical dyspnea) with immediate visual & audible alarms.
-4. **Multimodal Document OCR & Entity Extraction**: Direct scanning and analysis of handwritten and printed prescriptions, lab test values with out-of-range flag detection, and chronological ordering.
-5. **ABDM & DPDP Act 2023 Compliance**: ABHA ID verification, SMS OTP authentication, granular audio-guided consent, and automatic session wiping on completion.
-6. **Physician Consultation Summary**: Standardized, editable clinical summary card and FHIR-ready payload for doctors to review in seconds.
+---
 
-## Tech Stack
-- **Frontend**: React, Vite, Web Speech API, High-Contrast Accessibility Design System (min-height 60px touch targets, WCAG AAA mode).
-- **Backend**: Node.js, Express, TypeScript/ESM, Helmet, CORS, Multer.
-- **AI Core**: Google Gen AI SDK (`@google/genai`) with `gemini-2.5-flash`.
-- **Database & ORM**: PostgreSQL via Prisma ORM.
+## ?? Step-by-Step System Workflow
 
-## Quick Start
+* **Step 1 - Patient Authentication & Check-in:** Patients verify identity securely using ABHA ID or mobile number via SMS OTP.
+* **Step 2 - Multilingual Voice/Touch Consultation:** Guided voice-to-text intake supporting multiple regional languages via the Web Speech API.
+* **Step 3 - Clinical Adaptive Branching:** Dynamic questioning driven by the **SOCRES framework** (for allopathy) or **Dashavidha Pariksha** (for AYUSH).
+* **Step 4 - Document Digitization:** Instant OCR and entity extraction from uploaded handwritten or printed prescriptions and lab reports.
+* **Step 5 - Physician Handover:** Automated, structured clinical summary card generation for doctors to review in seconds.
 
-### 1. Installation
+---
+
+## ?? Key Capabilities
+
+* **Multilingual Voice Intake:** Supports Hindi, English, Tamil, Telugu, Kannada, Malayalam, and Bengali.
+* **Real-Time Red-Flag Emergency Triage:** Instant detection of critical presentations (e.g., acute stroke signs, myocardial infarction, critical dyspnea) with immediate visual and audible alarms.
+* **ABHA & DPDP Act 2023 Compliance:** Secure consent management, data privacy, and automatic session wiping upon completion.
+
+---
+
+## ??? Tech Stack
+
+* **Frontend:** React, Vite, Web Speech API, High-Contrast Accessibility Design System
+* **Backend:** Node.js, Express, TypeScript/ESM, Helmet, CORS, Multer
+* **AI Core:** Google Gen AI SDK (`@google/genai`) using `gemini-2.5-flash`
+* **Database & ORM:** PostgreSQL via Prisma ORM
+
+---
+
+## ?? Application Screenshots & Walkthrough
+
+| Step 1: Kiosk Home & Language Select | Step 2: AI Voice Consultation Screen |
+| :---: | :---: |
+| ![Kiosk Home](./assets/images/home-screen.png) | ![Voice Chat](./assets/images/voice-chat.png) |
+| *Patient selects preferred regional language & initiates session.* | *Interactive AI-driven medical intake and symptom logging.* |
+
+| Step 3: Document OCR Upload | Step 4: Doctor Queue & Summary Portal |
+| :---: | :---: |
+| ![Document Upload](./assets/images/ocr-upload.png) | ![Doctor Summary](./assets/images/doctor-portal.png) |
+| *Automated extraction of lab reports and prescriptions.* | *Structured clinical summaries and patient queue management.* |
+
+---
+
+## ?? Quick Start & Installation
+
+### 1. Clone the Repository
 ```bash
-npm run install:all
+git clone https://github.com/jayavardhankurasala/medikiosk.git
+cd medikiosk
 ```
-
-### 2. Configure Environment
-Copy `.env.example` to `backend/.env` and supply your `GEMINI_API_KEY`:
-```bash
-cp .env.example backend/.env
-```
-
-### 3. Run Development Servers
-```bash
-npm run dev
-```
-- Backend will run on: `http://localhost:5000`
-- Frontend Kiosk will run on: `http://localhost:5173`
